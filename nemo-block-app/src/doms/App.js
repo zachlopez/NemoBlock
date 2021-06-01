@@ -1,91 +1,145 @@
-import React from 'react';
-import '../styles/App.css';
-import Column from './Column';
-import initData from './init-data';
-import { DragDropContext } from 'react-beautiful-dnd';
-
-export default class App extends React.Component {
-  state = initData;
-
-  onDragStart = start => {
-    this.setState({
-      ...this.state,
-      homeId: start.draggableId,
-    });
-  };
-
-  onDragEnd = result => {
-    const { destination, source, draggableId } = result;
-
-    if (
-      !destination ||
-      (destination.droppableId === source.droppableId &&
-      destination.index === source.index)
-    ) {
-      this.setState({
-        ...this.state,
-        homeId: null,
-      });
-      return;
-    }
-
-    const srcColumn = this.state.columns[source.droppableId];
-    const newSrcBlockIds = Array.from(srcColumn.blockIds);
-    if (source.droppableId !== "blocks") newSrcBlockIds.splice(source.index, 1);
-
-    const newSrcColumn = {
-      ...srcColumn,
-      blockIds: newSrcBlockIds,
-    };
-
-    const newState = {
-      ...this.state,
-      columns: {
-        ...this.state.columns,
-        [newSrcColumn.id]: newSrcColumn,
-      },
-    };
-
-    const desColumn = newState.columns[destination.droppableId];
-    const newDesBlockIds = Array.from(desColumn.blockIds);
-    if (source.droppableId === "blocks") {
-        const oldId = draggableId;
-        const newId = draggableId+newState.counts[oldId];
-        newState.counts[oldId]++;
-        newState.blocks[newId] = {
-          ...newState.blocks[oldId],
-          id: newId,
-        };
-        newDesBlockIds.splice(destination.index, 0, newId);
-        if (newState.blocks[newId].command === "if" || newState.blocks[newId].command === "for") {
-          newState.columns[newId] = {
-            ...newState.columns[oldId],
-            id: newId,
-            blockIds: [],
-          };
+import React, { Component } from 'react';
+import SortableTree from 'react-sortable-tree';
+import ListGroup from 'react-bootstrap/ListGroup';
+import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
+ 
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.curNode = {};
+    this.state = {
+      blocks: [
+        { 
+          id: 'Blocks',
+          title: 'Blocks', 
+          canNest: true, 
+          isSource: true,
+          children: [
+            { 
+              title: 'If',
+              canNest: true,
+            }, { 
+              title: 'For',
+              canNest: true,
+            }, { 
+              title: 'Say',
+              canNest: false,
+            }, { 
+              title: 'Set',
+              canNest: false,
+            }, 
+          ]
         }
-    } else {
-      newDesBlockIds.splice(destination.index, 0, draggableId);
-    }
-
-    const newDesColumn = {
-      ...desColumn,
-      blockIds: newDesBlockIds,
+      ],
+      booleans: [
+        { 
+          id: 'Booleans',
+          title: 'Booleans', 
+          canNest: true, 
+          isSource: true,
+          children: [
+            { 
+              title: '=',
+              canNest: false,
+            }, { 
+              title: '>',
+              canNest: false,
+            }, { 
+              title: '<',
+              canNest: false,
+            }, { 
+              title: 'or',
+              canNest: false,
+            }, { 
+              title: 'and',
+              canNest: false,
+            }, 
+          ]
+        }
+      ],
+      program: [
+        { 
+          id: 'Program',
+          title: 'Program', 
+          canNest: true,
+          isSource: false,
+          children: [] 
+        },
+      ],
     };
-
-    newState.columns[newDesColumn.id] = newDesColumn;
-    newState.homeId = null;
-    console.log(newState);
-    this.setState(newState);
-  };
-
+  }
+ 
   render() {
+    const canNodeHaveChildren = ( node ) => node.canNest;
+    const canDrop = ({ node, nextParent, prevPath, nextPath }) => {
+      console.log(nextPath);
+      return (nextPath.indexOf('Blocks') < 0 && nextPath.indexOf('Booleans') < 0 && nextPath.length > 1); 
+    };
+    const canDrag = ({ node, path, treeIndex, lowerSiblingCounts, isSearchMatch, isSearchFocus }) => {
+      return (path.length > 1);
+    };
+    const onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
+      let tmpState = this.state;
+      if (prevPath[0] === 'Blocks' || prevPath[0] ==='Booleans') {
+        tmpState.lastNode = node;
+      }
+      else {
+        tmpState.lastNode = null;
+      }
+      this.setState(tmpState);
+    };
+    const onChange = (nodes) => {
+      let tmpState = {
+        ...this.state,
+        [nodes[0].id.toLowerCase()]: nodes,
+      }
+      if (tmpState.lastNode !== null) {
+        const nodeSrc = tmpState.lastNode.source;
+        let tmpNode = tmpState[nodeSrc[0]][0].children[nodeSrc[1]];
+        tmpNode.id = tmpNode.title + "-" + tmpNode.count;
+        tmpNode.count += 1;
+        tmpState[nodeSrc[0]][0].children[nodeSrc[1]] = tmpNode;
+        tmpState.lastNode = null;
+      }
+      console.log(tmpState);
+      this.setState(tmpState);
+    };
     return (
-      <DragDropContext onDragEnd={this.onDragEnd} onDragStart={this.onDragStart}>
-        {this.state.columnOrder.map(columnId => {
-          return <Column key={columnId} columnId={columnId} state={this.state} parentDropDisabled={false}/>;
-        })}
-      </DragDropContext>
+      <div style={{ height: 400 }}>
+        <SortableTree
+          treeData={this.state.blocks}
+          canNodeHaveChildren={canNodeHaveChildren}
+          onChange={blocks => this.setState({ blocks })}
+          canDrag={canDrag}
+          canDrop={canDrop}
+          getNodeKey={({ node }) => node.id || node.title}
+          dndType={'blocks'}
+          shouldCopyOnOutsideDrop={Boolean(true)}
+          isVirtualized={Boolean(false)}
+        />
+        <SortableTree
+          treeData={this.state.booleans}
+          canNodeHaveChildren={canNodeHaveChildren}
+          onChange={booleans => this.setState({ booleans })}
+          canDrag={canDrag}
+          canDrop={canDrop}
+          getNodeKey={({ node }) => node.id}
+          dndType={'booleans'}
+          shouldCopyOnOutsideDrop={Boolean(true)}
+          isVirtualized={Boolean(false)}
+        />
+        <SortableTree
+          treeData={this.state.program}
+          canNodeHaveChildren={canNodeHaveChildren}
+          onChange={program => this.setState({ program })}
+          canDrag={canDrag}
+          canDrop={canDrop}
+          getNodeKey={({ node }) => node.id}
+          dndType={'blocks'}
+          shouldCopyOnOutsideDrop={Boolean(false)}
+          isVirtualized={Boolean(false)}
+        />
+      </div>
     );
   }
 }

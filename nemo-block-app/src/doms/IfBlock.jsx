@@ -6,7 +6,7 @@ import Column from './Column';
 export default class Block extends React.Component {
   render() {
     return (
-        <Draggable draggableId={this.props.block.id} index={this.props.index}>
+        <Draggable key={this.props.block.id} draggableId={this.props.block.id} index={this.props.index}>
             {(provided) => (
                 <ListGroupItem as="li"
                     variant="flush"

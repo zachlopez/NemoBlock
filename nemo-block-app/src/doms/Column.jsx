@@ -8,7 +8,7 @@ import { Droppable } from 'react-beautiful-dnd';
 export default class Column extends React.Component {
     render() {
         const mystyle = {
-            minHeight: this.props.state.minHeight/2+"px",
+            minHeight: this.props.state.minHeight*3/4+"px",
         };
         const state = this.props.state;
         const column = state.columns[this.props.columnId];
