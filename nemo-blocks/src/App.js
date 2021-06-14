@@ -7,6 +7,16 @@ import Blockly from "blockly";
 export default function App() {
   const [xml, setXml] = useState("");
   const [javascriptCode, setJavascriptCode] = useState("");
+  const [curUser, setCurUser] = useState("");
+  const [userField, setUserField] = useState("");
+  const [passField, setPassField] = useState("");
+  const [curId, setCurId] = useState(-1);
+  const [newId, setNewId] = useState(-1);
+  const [filename, setFilename] = useState("");
+  const [title, setTitle] = useState("");
+  const [intro, setIntro] = useState("");
+  const [dlg, setDlg] = useState("");
+  const [prgNames, setPrgNames] = useState({});
 
   const initialXml =
     `<xml xmlns="https://developers.google.com/blockly/xml">
@@ -285,9 +295,95 @@ export default function App() {
     ],
   };
   function workspaceDidChange(workspace) {
-    const code = Blockly.JavaScript.workspaceToCode(workspace);
+    let code = Blockly.JavaScript.workspaceToCode(workspace);
+    code = code + "module.exports = {\n" + 
+    "   filename: '" + filename + "',\n" + 
+    "   title: '" + title + "',\n" +
+    "   introduction: ['" + ((intro === "") ? "" : intro.replaceAll('\n', "','")) + "'],\n" + 
+    "   start: start,\n" + 
+    "   state: state,\n" + 
+    "};\n"
     setJavascriptCode(code);
   }
+
+  let handleLogin = async e => {
+    e.preventDefault();
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({pass: passField, user: userField}),
+    });
+    let sentUser = userField; // prevent any updating mid-send
+    let body = await response.text();
+    body = JSON.parse(body);
+    if (body.stat === "Success!") setCurUser(body.val);
+    setDlg(body.stat);
+  };
+
+  let handleCreate = async e => {
+    e.preventDefault();
+    const response = await fetch('/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({pass: passField, user: userField}),
+    });
+    let body = await response.text();
+    body = JSON.parse(body);
+    setDlg(body.stat);
+  };
+
+  let handleSave = async e => {
+    e.preventDefault();
+    if (curUser === "") {
+      setDlg("Please login before saving.");
+    } else {
+      const response = await fetch('/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({user: curUser, id: curId, filename: filename, title: title, intro: intro, program: xml}),
+      });
+      let body = await response.text();
+      body = JSON.parse(body);
+      if (body.stat === "Success!") setCurId(body.val);
+      setDlg(body.stat);
+    }
+  };
+
+  let handleLoad = async e => {
+    e.preventDefault();
+    const response = await fetch('/load', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({user: curUser, id: newId}),
+    });
+    let body = await response.text();
+    body = JSON.parse(body);
+    if (body.stat === "Success!") setPrgNames(body.val);
+    setDlg(body.stat);
+  };
+
+  let handleGetPrgNames = async e => {
+    e.preventDefault();
+    const response = await fetch('/getPrgNames', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({user: curUser}),
+    });
+    let body = await response.text();
+    body = JSON.parse(body);
+    if (body.stat === "Success!") setPrgNames(body.val);
+    setDlg(body.stat);
+  };
 
   return (
     <div style={{display: "flex", flexWrap: "wrap", width: "100%", minHeight: "100%"}}>
@@ -327,6 +423,48 @@ export default function App() {
           readOnly
         ></textarea>
       </div>
+      <div  style={{width: "100%"}}>
+        Username: <input
+          type="text"
+          value={userField}
+          onChange={e => setUserField(e.target.value)}
+        ></input>
+        Password: <input
+          type="password"
+          value={passField}
+          onChange={e => setPassField(e.target.value)}
+        ></input>
+        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleCreate}>Create Account</button>
+      </div>
+      <br/><br/>
+      <div style={{width: "100%"}}>
+        Filename: <input
+            type="text"
+            value={filename}
+            onChange={e => setFilename(e.target.value)}
+          ></input>
+        Title: <input
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          ></input>
+        Introduction: <textarea
+            value={intro}
+            onChange={e => setIntro(e.target.value)}
+          ></textarea>
+          <button onClick={handleSave}>Save</button>
+        </div>
+        <div style={{width: "100%"}}>
+          {(Object.entries(prgNames).length === 0) ? 
+            <select onClick={handleGetPrgNames}><option value="-1" selected disabled hidden>None</option><option disabled>No program saved</option></select> : 
+            <select onClick={handleGetPrgNames}><option value="-1" selected disabled hidden>None</option>{Object.entries(prgNames).map((pair) => <option value={'"' + pair[0] + '"'}>{pair[1]}</option>)}</select>
+          }
+          <button onClick={handleLoad}>Load</button>
+        </div>
+        <br/><br/>
+        <div style={{width: "100%"}}>{(curUser === "") ? "Not logged in. \n" : "Logged in as \n" + curUser}</div>
+        <div style={{width: "100%"}}>{dlg}</div>
     </div>
   );
 }

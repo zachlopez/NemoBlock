@@ -405,20 +405,14 @@ Blockly.JavaScript['repeat'] = function(block) {
     "const state = (payload, say, sendButton) => { \n" + 
         "   updateVariables(JSON.parse(payload)); \n" + 
         statements_actions + 
-    "}; \n\n\n" + 
-    "module.exports = {\n" + 
-    "   filename: '',\n" + 
-    "   title: '',\n" +
-    "   introduction: [],\n" + 
-    "   start: start,\n" + 
-    "   state: state,\n" + 
-    "};\n";
+    "}; \n\n\n";
     return code;
 };
 
 // TODO: Fix Emojis
-// TODO: Find a way to limit to option blocks only
 // TODO: Fix items not in the given functions
-// TODO: Lines and error checking
+// TODO: Line numbers and error checking
 // TODO: Fix text area
-// TODO: Include post added variables
+// TODO: Include the link when there's an error for file attachment
+// TODO: Fix empty introduction
+// TODO: Fix quotation or apostrophe when turned into introduction --> escape character
