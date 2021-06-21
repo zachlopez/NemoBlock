@@ -87,7 +87,7 @@ Blockly.Blocks['send_image'] = {
     else {
         code = "" + 
         "// ERROR: Image URL invalid. Must start with 'https://' or 'http://' and end with jpeg/jpg/gif/png/svg\n" + 
-        "say('Included image was not found in the given link').then(() => {\n" + 
+        "say('Included image was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
@@ -124,7 +124,7 @@ Blockly.Blocks['send_image'] = {
     else {
         code = "" + 
         "// ERROR: Video URL invalid. Must start with 'https://' or 'http://' and end with mp3/wav/aiff/aac/flac\n" + 
-        "say('Included video was not found in the given link').then(() => {\n" + 
+        "say('Included video was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
@@ -161,7 +161,7 @@ Blockly.Blocks['send_image'] = {
     else {
         code = "" + 
         "// ERROR: Audio URL invalid. Must start with 'https://' or 'http://' and end with mp4/avi/mov/flv/wmv\n" + 
-        "say('Included audio was not found in the given link').then(() => {\n" + 
+        "say('Included audio was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
@@ -191,6 +191,9 @@ Blockly.JavaScript['ask'] = function(block) {
     while(statements_actions.includes("// ERROR: the following option must be in an 'ask' block - ")) {
         statements_actions = statements_actions.replace("// ERROR: the following option must be in an 'ask' block - ", "// new option for ")
     }
+
+    var unique_curPayload = Blockly.JavaScript.variableDB_.getDistinctName('curPayload', Blockly.Variables.NAME_TYPE);
+    var unique_options = Blockly.JavaScript.variableDB_.getDistinctName('options', Blockly.Variables.NAME_TYPE);
     var code = "" + 
         "const curPayload = summarizeVariables();\n" +
         "let options = [];\n" + 
@@ -228,7 +231,7 @@ Blockly.JavaScript['option'] = function(block) {
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" +  
         "updateVariables(curPayload); // restores variables \n" + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({" + value_title +", summarizeVariables()});\n";
+        "options.push({" + value_title +": summarizeVariables()});\n";
     return code;
 };
 
@@ -254,7 +257,7 @@ Blockly.JavaScript['option_only'] = function(block) {
     var code = "" + 
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({" + value_title +", summarizeVariables()});\n";
+        "options.push({" + value_title +": summarizeVariables()});\n";
     return code;
 };
 
@@ -294,7 +297,7 @@ Blockly.Blocks['option_do'] = {
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({" + value_title +", summarizeVariables()});\n";
+        "options.push({" + value_title +": summarizeVariables()});\n";
     return code;
   };
 
@@ -325,7 +328,7 @@ Blockly.JavaScript['option_do_only'] = function(block) {
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
-        "options.push({" + value_title +", summarizeVariables()});\n";
+        "options.push({" + value_title +": summarizeVariables()});\n";
     return code;
 };
 
@@ -352,7 +355,7 @@ Blockly.JavaScript['option_restart'] = function(block) {
     var code = "" + 
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({" + value_title +", 'restart'});\n";
+        "options.push({" + value_title +": 'restart'});\n";
     return code;
 };
 
@@ -370,16 +373,17 @@ Blockly.Blocks['start'] = {
 Blockly.JavaScript['start'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     var varList = Blockly.Variables.allUsedVarModels(block.workspace);
+    var unique_payload = Blockly.JavaScript.variableDB_.getDistinctName('payload', Blockly.Variables.NAME_TYPE);
     var code = "" +
         "// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return { \n" +
-                varList.reduce((sum, cur)  => sum + "     " + cur.name + ": " + cur.name + ",\n", "") + 
+                varList.reduce((sum, cur)  => sum + "     " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ",\n", "") + 
             "  }; \n" + 
         "}; \n\n\n" +   
         "// updates all used variables based on the payload dictionary object \n" + 
-        "const updateVariables = (payload) => { \n" + 
-            varList.reduce((sum, cur)  => sum + "  " + cur.name + " = payload." + cur.name + ";\n", "") + 
+        "const updateVariables = (" + unique_payload + ") => { \n" + 
+            varList.reduce((sum, cur)  => sum + "  " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + " = " + unique_payload + "." + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ";\n", "") + 
         "}; \n\n\n" +
         "// run at the start of the program or when restart option is chosen\n" + 
         "const start = (say, sendButton) => { \n" + 
@@ -409,10 +413,12 @@ Blockly.JavaScript['repeat'] = function(block) {
     return code;
 };
 
-// TODO: Fix Emojis
 // TODO: Fix items not in the given functions
 // TODO: Line numbers and error checking
-// TODO: Fix text area
 // TODO: Include the link when there's an error for file attachment
-// TODO: Fix empty introduction
 // TODO: Fix quotation or apostrophe when turned into introduction --> escape character
+// TODO: Error check for infinite loops
+// TODO: Error check for variables with name 'state' and 'start' and other function names and curPayload and options
+// TODO: Check save befor going back
+// TODO: Check empty title field before saving
+// TODO: Check duplicate title field before saving

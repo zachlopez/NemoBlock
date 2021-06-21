@@ -103,7 +103,7 @@ app.post('/save', (req, res) => {
           console.error(err.message);
           res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
         } else {
-          res.send(JSON.stringify({stat: 'Success!', val: row.id}));
+          res.send(JSON.stringify({stat: 'Successfully saved!', val: row.id}));
         }
       });
     } else {
@@ -117,12 +117,48 @@ app.post('/save', (req, res) => {
               console.error(err.message);
               res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
             } else {
-              res.send(JSON.stringify({stat: 'Success!', val: row.id}));
+              res.send(JSON.stringify({stat: 'Successfully saved!', val: row.id}));
             }
           });
         }
       });
     }
+  });
+});
+
+app.post('/load', (req, res) => {
+  let retrieveSQL = 'SELECT * FROM programs WHERE username = ? AND id = ?';
+  // first row only
+  db.get(retrieveSQL, [req.body.user, req.body.id], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
+    } else if (row) { // if the row exists
+      res.send(JSON.stringify({
+        stat: 'Load successful!', 
+        val: {
+          filename: row.filename,
+          title: row.title,
+          intro: row.introduction,
+          program: row.program,
+          id: row.id
+        },
+      }));
+    } else {
+      res.send(JSON.stringify({stat: "Selected program id is not found in the user's saved programs."}));
+    }
+  });
+});
+
+app.post('/delete', (req, res) => {
+  let selectSQL = 'DELETE FROM programs WHERE username = ? AND id = ?';
+  db.run(selectSQL, [req.body.user, req.body.id], function(err) {
+    if (err) {
+      console.error(err.message);
+      res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
+      return;
+    }
+    res.send(JSON.stringify({stat: 'Success!'}));
   });
 });
 
@@ -138,10 +174,8 @@ app.post('/getPrgNames', (req, res) => {
       let rowDic = {};
       rows.forEach((row)=>{
         rowDic[row.id] = row.title;
-        console.log(row.id + ": " + row.title);
       });
-      res.send(JSON.stringify({stat: 'Success!', val: rowDic}));
-      console.log(JSON.stringify({stat: 'Success!', val: rowDic}));
+      res.send(JSON.stringify({stat: ' ', val: rowDic}));
     }
   });
 });
