@@ -59,17 +59,17 @@ Blockly.JavaScript['say'] = function(block) {
 
 Blockly.Blocks['send_image'] = {
     init: function() {
-      this.appendValueInput("URL")
-          .setCheck("String")
-          .appendField("send image from link:");
-      this.appendStatementInput("ACTIONS")
-          .setCheck('action')
-          .appendField("then");
-      this.setPreviousStatement(true, 'action');
-      this.setNextStatement(true, 'action');
-      this.setColour(30);
-   this.setTooltip("");
-   this.setHelpUrl("");
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send image from link:");
+        this.appendStatementInput("ACTIONS")
+            .setCheck('action')
+            .appendField("then");
+        this.setPreviousStatement(true, 'action');
+        this.setNextStatement(true, 'action');
+        this.setColour(30);
+        this.setTooltip("");
+        this.setHelpUrl("");
     }
   };
 
@@ -96,17 +96,17 @@ Blockly.Blocks['send_image'] = {
 
   Blockly.Blocks['send_video'] = {
     init: function() {
-      this.appendValueInput("URL")
-          .setCheck("String")
-          .appendField("send video from link:");
-      this.appendStatementInput("ACTIONS")
-          .setCheck('action')
-          .appendField("then");
-      this.setPreviousStatement(true, 'action');
-      this.setNextStatement(true, 'action');
-      this.setColour(30);
-   this.setTooltip("");
-   this.setHelpUrl("");
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send video from link:");
+        this.appendStatementInput("ACTIONS")
+            .setCheck('action')
+            .appendField("then");
+        this.setPreviousStatement(true, 'action');
+        this.setNextStatement(true, 'action');
+        this.setColour(30);
+        this.setTooltip("");
+        this.setHelpUrl("");
     }
   };
 
@@ -188,9 +188,7 @@ Blockly.JavaScript['ask'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     if (value_dialogue === "") value_dialogue = "''";
-    while(statements_actions.includes("// ERROR: the following option must be in an 'ask' block - ")) {
-        statements_actions = statements_actions.replace("// ERROR: the following option must be in an 'ask' block - ", "// new option for ")
-    }
+    statements_actions = statements_actions.replaceAll("// ERROR: the following option must be in an 'ask' block - ", "// new option for ")
 
     var unique_curPayload = Blockly.JavaScript.variableDB_.getDistinctName('curPayload', Blockly.Variables.NAME_TYPE);
     var unique_options = Blockly.JavaScript.variableDB_.getDistinctName('options', Blockly.Variables.NAME_TYPE);
@@ -198,7 +196,7 @@ Blockly.JavaScript['ask'] = function(block) {
         "const curPayload = summarizeVariables();\n" +
         "let options = [];\n" + 
         statements_actions + 
-        "sendButton(" + value_dialogue + ", JSON.stringify(options));\n";
+        "sendButton(" + value_dialogue + ", options);\n";
     return code;
 };
 
@@ -231,7 +229,7 @@ Blockly.JavaScript['option'] = function(block) {
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" +  
         "updateVariables(curPayload); // restores variables \n" + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({" + value_title +": summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n";
     return code;
 };
 
@@ -257,7 +255,7 @@ Blockly.JavaScript['option_only'] = function(block) {
     var code = "" + 
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({" + value_title +": summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
     return code;
 };
 
@@ -297,7 +295,7 @@ Blockly.Blocks['option_do'] = {
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({" + value_title +": summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
     return code;
   };
 
@@ -328,7 +326,7 @@ Blockly.JavaScript['option_do_only'] = function(block) {
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
-        "options.push({" + value_title +": summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
     return code;
 };
 
@@ -355,7 +353,7 @@ Blockly.JavaScript['option_restart'] = function(block) {
     var code = "" + 
         "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({" + value_title +": 'restart'});\n";
+        "options.push({title: " + value_title +", payload: 'restart'});\n"
     return code;
 };
 

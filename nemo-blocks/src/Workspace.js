@@ -23,10 +23,11 @@ export default function Workspace(props) {
 
     function workspaceDidChange(workspace) {
         let code = Blockly.JavaScript.workspaceToCode(workspace);
-        code = code + "module.exports = {\n" + 
-        "   filename: '" + filename + "',\n" + 
-        "   title: '" + title + "',\n" +
-        "   introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll('\n', "','")) + "'") + "],\n" + 
+        code = "'use strict';\n" + 
+        code + "module.exports = {\n" + 
+        "   filename: '" + filename.replaceAll("'", "\\'") + "',\n" + 
+        "   title: '" + title.replaceAll("'", "\\'") + "',\n" +
+        "   introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll("'", "\\'").replaceAll('\n', "','")) + "'") + "],\n" + 
         "   start: start,\n" + 
         "   state: state,\n" + 
         "};\n"
