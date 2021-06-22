@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require ('bcrypt');
 const saltRounds = 10;
-
+const process = require('process');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -191,3 +191,23 @@ app.post('/getPrgNames', (req, res) => {
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
+
+process.on('exit', code => {
+  console.log(`Disconnected from database`);
+  db.close();
+});
+
+process.on('SIGTERM', signal => {
+  console.log(`Process ${process.pid} received a SIGTERM signal`);
+  process.exit(0);
+});
+
+process.on('SIGINT', signal => {
+  console.log(`Process ${process.pid} has been interrupted`);
+  process.exit(0);
+});
+
+process.on('uncaughtException', err => {
+  console.log(`Uncaught Exception: ${err.message}`);
+  process.exit(1);
+});
