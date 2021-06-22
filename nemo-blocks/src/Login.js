@@ -17,17 +17,21 @@ export default function Login(props) {
         });
         let body = await response.text();
         body = JSON.parse(body);
-        if (body.stat === "Success!") {
-            props.setPage("Programs");
-            props.setCurUser(body.val); // Sends back username of user that was logged in
-            setUserField("");
-        };
         setPassField("");
         setDlg(body.stat);
+        if (body.stat === "Success!") {
+            props.setCurUser(body.val); // Sends back username of user that was logged in
+            setUserField("");
+            props.setPage("Programs");
+        };
     };
 
     let handleCreate = async e => {
         e.preventDefault();
+        if (passField.length < 4 || userField < 4) {
+            setDlg("Username or password is too short.");
+            return;
+        }
         const response = await fetch('/create', {
         method: 'POST',
         headers: {
@@ -42,7 +46,7 @@ export default function Login(props) {
     return (
         <div class="mx-5 mt-5">
             <h1>Nemoblocks</h1>
-            {(dlg !== "" && dlg !== "Success!") ? <div class="alert alert-danger" role="alert">{dlg}</div>: <></>}
+            {(dlg !== "")? ((dlg !== "Success!") ? <div class="alert alert-danger" role="alert">{dlg}</div>: <div class="alert alert-success" role="alert">{dlg}</div>) : <></>}
             <div class="input-group mb-3 form-g">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Username</span>

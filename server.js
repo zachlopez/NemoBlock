@@ -88,36 +88,46 @@ app.post('/create', (req, res) => {
 
 app.post('/save', (req, res) => {
   // CREATE TABLE programs (id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, title TEXT, introduction TEXT, program TEXT, username TEXT NOT NULL, FOREIGN KEY (username) REFERENCES users (username) ON UPDATE CASCADE ON DELETE CASCADE);
+  let checkSQL = 'SELECT * FROM programs WHERE filename = ? AND username = ? AND NOT id = ?';
   let selectSQL = 'SELECT * FROM programs WHERE id = ? AND username = ?';
   let updateSQL = 'UPDATE programs SET filename = ?, title = ?, introduction = ?, program = ? WHERE id = ?';
   let insertSQL = 'INSERT INTO programs (filename, title, introduction, program, username) VALUES(?, ?, ?, ?, ?)';
   let retrieveSQL = 'SELECT * FROM programs WHERE filename = ? AND title = ? AND introduction = ? AND program = ? AND username = ?';
   // first row only
-  db.get(selectSQL, [req.body.id, req.body.user], (err, row) => {
+  db.get(checkSQL, [req.body.filename, req.body.user, req.body.id], (err, row) => {
     if (err) {
       console.error(err.message);
       res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
     } else if (row) { // if the row exists
-      db.run(updateSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.id], (err) => {
-        if (err) {
-          console.error(err.message);
-          res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
-        } else {
-          res.send(JSON.stringify({stat: 'Successfully saved!', val: row.id}));
-        }
-      });
+      res.send(JSON.stringify({stat: 'You already have a program with this title. Please change before saving.'}));
     } else {
-      db.run(insertSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.user], (err) => {
+      db.get(selectSQL, [req.body.id, req.body.user], (err, row) => {
         if (err) {
           console.error(err.message);
           res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
-        } else {
-          db.get(retrieveSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.user], (err, row) => {
+        } else if (row) { // if the row exists
+          db.run(updateSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.id], (err) => {
             if (err) {
               console.error(err.message);
               res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
             } else {
               res.send(JSON.stringify({stat: 'Successfully saved!', val: row.id}));
+            }
+          });
+        } else {
+          db.run(insertSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.user], (err) => {
+            if (err) {
+              console.error(err.message);
+              res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
+            } else {
+              db.get(retrieveSQL, [req.body.filename, req.body.title, req.body.intro, req.body.program, req.body.user], (err, row) => {
+                if (err) {
+                  console.error(err.message);
+                  res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
+                } else {
+                  res.send(JSON.stringify({stat: 'Successfully saved!', val: row.id}));
+                }
+              });
             }
           });
         }

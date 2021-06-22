@@ -14,15 +14,15 @@ export default function App() {
   return (
     <div style={{display: "flex", flexWrap: "wrap", width: "100%", minHeight: "100%"}}>
       <Page target="Login" current={page}>
-        <Login setCurUser={setCurUser} setPage={setPage}></Login>
+        <Login shown={"Login"===page} setCurUser={setCurUser} setPage={setPage}></Login>
       </Page>
 
       <Page target="Programs" current={page}>
-        <Programs setCurUser={setCurUser} curUser={curUser} setNewId={setNewId} setPage={setPage}></Programs>
+        <Programs shown={"Programs"===page} setCurUser={setCurUser} curUser={curUser} setNewId={setNewId} setPage={setPage}></Programs>
       </Page>
 
       <Page target="Workspace" current={page}>
-        <Workspace setCurUser={setCurUser} curUser={curUser} newId={newId} setPage={setPage}></Workspace>
+        <Workspace shown={"Workspace"===page} setCurUser={setCurUser} curUser={curUser} newId={newId} setPage={setPage}></Workspace>
       </Page>
     </div>
   );

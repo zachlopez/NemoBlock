@@ -189,13 +189,10 @@ Blockly.JavaScript['ask'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     if (value_dialogue === "") value_dialogue = "''";
     statements_actions = statements_actions.replaceAll("// ERROR: the following option must be in an 'ask' block - ", "// new option for ")
-
-    var unique_curPayload = Blockly.JavaScript.variableDB_.getDistinctName('curPayload', Blockly.Variables.NAME_TYPE);
-    var unique_options = Blockly.JavaScript.variableDB_.getDistinctName('options', Blockly.Variables.NAME_TYPE);
     var code = "" + 
         "const curPayload = summarizeVariables();\n" +
         "let options = [];\n" + 
-        statements_actions + 
+        statements_actions.replaceAll("\n  ", "\n").substring(2) + 
         "sendButton(" + value_dialogue + ", options);\n";
     return code;
 };
@@ -376,12 +373,18 @@ Blockly.JavaScript['start'] = function(block) {
         "// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return { \n" +
-                varList.reduce((sum, cur)  => sum + "     " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ",\n", "") + 
+                varList.reduce((sum, cur)  => sum + "    " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ",\n", "") + 
             "  }; \n" + 
         "}; \n\n\n" +   
         "// updates all used variables based on the payload dictionary object \n" + 
         "const updateVariables = (" + unique_payload + ") => { \n" + 
-            varList.reduce((sum, cur)  => sum + "  " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + " = " + unique_payload + "." + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ";\n", "") + 
+            varList.reduce((sum, cur)  => {
+                let newSum = sum;
+                let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
+                let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say"];
+                if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
+                return newSum + "  " + varName + " = " + unique_payload + "." + varName + ";\n";
+            }, "") + 
         "}; \n\n\n" +
         "// run at the start of the program or when restart option is chosen\n" + 
         "const start = (say, sendButton) => { \n" + 
@@ -405,18 +408,12 @@ Blockly.JavaScript['repeat'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     var code =  "// repeated every time a button is pressed\n" + 
     "const state = (payload, say, sendButton) => { \n" + 
-        "   updateVariables(JSON.parse(payload)); \n" + 
+        "  updateVariables(JSON.parse(payload)); \n" + 
         statements_actions + 
     "}; \n\n\n";
     return code;
 };
 
-// TODO: Fix items not in the given functions
-// TODO: Line numbers and error checking
-// TODO: Include the link when there's an error for file attachment
-// TODO: Fix quotation or apostrophe when turned into introduction --> escape character
+// TODO: Error check for options out of place
 // TODO: Error check for infinite loops
 // TODO: Error check for variables with name 'state' and 'start' and other function names and curPayload and options
-// TODO: Check save befor going back
-// TODO: Check empty title field before saving
-// TODO: Check duplicate title field before saving
