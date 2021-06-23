@@ -142,7 +142,7 @@ export default function Workspace(props) {
         <div style={{width: "100%"}} class="container-fluid px-0">
             { (initialXml !== "") ?
             <div class="row">
-                <div class="col-8 px-0">
+                <div class="col-12 col-md-7 col-xl-8 px-0">
                     <BlocklyWorkspace
                         toolboxConfiguration={toolbox}
                         initialXml={initialXml}
@@ -168,12 +168,12 @@ export default function Workspace(props) {
                         onXmlChange={setXml}
                     />
                 </div>
-                <div class="col-4 px-0">
+                <div style={{height: "100%"}} class="col-12 col-md-5 col-xl-4 px-0">
                     { (!showMore) ? 
                     <textarea
                         class="h-90"
                         id="code"
-                        rows="40"
+                        rows="38"
                         style={{
                             width: "100%", 
                             resize: "none", 
@@ -209,15 +209,15 @@ export default function Workspace(props) {
                             onChange={e => setIntro(e.target.value)}
                         ></textarea>
                     </div>
-                    <div class="btn-toolbar d-flex justify-content-around pb-3">
-                        <button style={{width: "94%"}} class="btn btn-outline-primary" onClick={handleLogout}>Logout</button>
+                    <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
+                        <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleLogout}>Logout</button>
                     </div>
                     </>
                     }
-                    <div class="btn-toolbar d-flex justify-content-around">
-                        <button style={{width: "27%"}} class="btn btn-outline-primary" onClick={handleSave}>Save</button>
-                        <button style={{width: "27%"}} class="btn btn-outline-primary" onClick={handleBack}>Back</button>
-                        <button style={{width: "27%"}} class={"btn btn-outline-primary" + ((showMore) ? " active" : "")} onClick={handleMore}>...</button>
+                    <div style={{height: "5%"}} class="btn-toolbar d-flex justify-content-around">
+                        <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class="btn btn-outline-primary" onClick={handleSave}>Save</button>
+                        <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class="btn btn-outline-primary" onClick={handleBack}>Back</button>
+                        <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class={"btn btn-outline-primary" + ((showMore) ? " active" : "")} onClick={handleMore}>...</button>
                     </div>
                 </div>
             </div>
