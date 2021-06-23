@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/zach/NemoBlock
+
 PID_TRES=$(lsof -t -i :3000)
 while [ ! -z "$PID_TRES" ]
 do
