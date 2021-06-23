@@ -1,7 +1,4 @@
 #!/bin/bash
-cd /home/zach/NemoBlock
-rm -rf node_modules
-npm install
 
 PID_TRES=$(lsof -t -i :3000)
 while [ ! -z "$PID_TRES" ]
