@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
+User=root
 ExecStart=/bin/bash /home/zach/NemoBlock/nemo_blocks_start.sh
 Restart=on-failure
 
