@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=ubuntu
-ExecStart=/bin/bash /home/zach/NemoBlocks/nemo_blocks_start.sh
+ExecStart=/bin/bash /home/zach/NemoBlock/nemo_blocks_start.sh
 Restart=on-failure
 
 [Install]
