@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -rf node_modules
+npm install
+
 PID_TRES=$(lsof -t -i :3000)
 while [ ! -z "$PID_TRES" ]
 do
@@ -16,6 +19,4 @@ kill -9 $PID_FIVE
 PID_FIVE=$(lsof -t -i :5000)
 done
 
-rm -rf node_modules
-npm install
 yarn dev
