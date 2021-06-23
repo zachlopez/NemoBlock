@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd /home/zach/NemoBlock
 rm -rf node_modules
 npm install
 
