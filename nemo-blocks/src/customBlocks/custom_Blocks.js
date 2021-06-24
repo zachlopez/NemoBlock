@@ -38,7 +38,6 @@ Blockly.Blocks['say'] = {
             .appendField("then");
         this.setInputsInline(true);
         this.setPreviousStatement(true, 'action');
-        this.setNextStatement(true, 'action');
         this.setColour(30);
         this.setTooltip("");
         this.setHelpUrl("");
@@ -66,7 +65,6 @@ Blockly.Blocks['send_image'] = {
             .setCheck('action')
             .appendField("then");
         this.setPreviousStatement(true, 'action');
-        this.setNextStatement(true, 'action');
         this.setColour(30);
         this.setTooltip("");
         this.setHelpUrl("");
@@ -103,7 +101,6 @@ Blockly.Blocks['send_image'] = {
             .setCheck('action')
             .appendField("then");
         this.setPreviousStatement(true, 'action');
-        this.setNextStatement(true, 'action');
         this.setColour(30);
         this.setTooltip("");
         this.setHelpUrl("");
@@ -140,7 +137,6 @@ Blockly.Blocks['send_image'] = {
           .setCheck('action')
           .appendField("then");
       this.setPreviousStatement(true, 'action');
-      this.setNextStatement(true, 'action');
       this.setColour(30);
    this.setTooltip("");
    this.setHelpUrl("");
@@ -200,7 +196,7 @@ Blockly.JavaScript['ask'] = function(block) {
 Blockly.Blocks['option'] = {
     init: function() {
         this.appendValueInput("TITLE")
-            .setCheck(["String", "Number"])
+            .setCheck(["String"])
             .appendField("add");
         this.appendValueInput("PAYLOAD_VAL")
             .setCheck(["String", "Number"])
@@ -233,7 +229,7 @@ Blockly.JavaScript['option'] = function(block) {
 Blockly.Blocks['option_only'] = {
     init: function() {
         this.appendValueInput("TITLE")
-            .setCheck(["String", "Number"])
+            .setCheck(["String"])
             .appendField("add");
         this.appendDummyInput()
             .appendField("option");
@@ -259,7 +255,7 @@ Blockly.JavaScript['option_only'] = function(block) {
 Blockly.Blocks['option_do'] = {
     init: function() {
         this.appendValueInput("TITLE")
-            .setCheck(["Number", "String"])
+            .setCheck(["String"])
             .appendField("add");
         this.appendDummyInput()
             .appendField("option");
@@ -299,7 +295,7 @@ Blockly.Blocks['option_do'] = {
 Blockly.Blocks['option_do_only'] = {
     init: function() {
         this.appendValueInput("TITLE")
-            .setCheck(["Number", "String"])
+            .setCheck(["String"])
             .appendField("add");
         this.appendDummyInput()
             .appendField("option");
@@ -332,7 +328,7 @@ Blockly.Blocks['option_restart'] = {
         this.appendDummyInput()
             .appendField("add");
         this.appendValueInput("TITLE")
-            .setCheck(["String", "Number"]);
+            .setCheck(["String"]);
         this.appendDummyInput()
             .appendField("option to restart");
         this.setInputsInline(true);
@@ -417,3 +413,4 @@ Blockly.JavaScript['repeat'] = function(block) {
 // TODO: Error check for options out of place
 // TODO: Error check for infinite loops
 // TODO: Error check for variables with name 'state' and 'start' and other function names and curPayload and options
+// TODO: Add a read me first thing

@@ -67,6 +67,7 @@ export default function Programs(props) {
 
     return (
         <div class="mx-5 mt-5">
+            <h1>Hello, {props.curUser}!</h1>
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" key="key-1">

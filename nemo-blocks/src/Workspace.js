@@ -81,7 +81,7 @@ export default function Workspace(props) {
     let handleSave = async e => {
         e.preventDefault();
         if (title.trim() === "" || filename.trim() === "") {
-            setDlg("Title or filename are empty. Click the '...' button to edit them.");
+            setDlg("Title or filename are empty. Click the 'More' button to edit them.");
             setShowDlg(true);
         } else if (props.curUser === "") {
             setDlg("Please login before saving.");
@@ -217,7 +217,7 @@ export default function Workspace(props) {
                     <div style={{height: "5%"}} class="btn-toolbar d-flex justify-content-around">
                         <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class="btn btn-outline-primary" onClick={handleSave}>Save</button>
                         <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class="btn btn-outline-primary" onClick={handleBack}>Back</button>
-                        <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class={"btn btn-outline-primary" + ((showMore) ? " active" : "")} onClick={handleMore}>...</button>
+                        <button style={{fontSize: "1.9vh", width: "27%", height: "100%"}} class={"btn btn-outline-primary" + ((showMore) ? " active" : "")} onClick={handleMore}>{((showMore) ? "Less" : "More")}</button>
                     </div>
                 </div>
             </div>
