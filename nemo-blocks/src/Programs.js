@@ -7,6 +7,7 @@ export default function Programs(props) {
     const [showConfirm, setShowConfirm] = useState(false);
     const [delId, setDelId] = useState(-1);
     const [delName, setDelName] = useState("");
+    const [showDelete, setShowDelete] = useState(false);
 
     useEffect(() => {
         async function getPrgNames () {
@@ -65,6 +66,34 @@ export default function Programs(props) {
         props.setPage("Login");
     };
 
+    let handleDestroy = async e => {
+        e.preventDefault();
+        setShowDelete(true);
+    };
+
+    let handleCancel = async e => {
+        e.preventDefault();
+        setShowDelete(false);
+    };
+
+    let handleContinue = async e => {
+        e.preventDefault();
+        const response = await fetch('/destroy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user: props.curUser}),
+        });
+        let body = await response.text();
+        body = JSON.parse(body);
+        setDlg(body.stat);
+        if (body.stat === 'Success!') {
+            props.setCurUser("");
+            props.setPage("Login");
+        }
+    };
+
     return (
         <div class="mx-5 mt-5">
             <h1>Hello, {props.curUser}!</h1>
@@ -87,7 +116,10 @@ export default function Programs(props) {
                 </ul>
             </div>
             {dlg}
-            <button class="btn btn-outline-primary my-3" onClick={handleLogout}>Logout</button>
+            <div class="btn-toolbar my-3">
+                <button class="btn btn-outline-primary" onClick={handleLogout}>Logout</button>
+                <button class="btn btn-outline-danger mx-3" onClick={handleDestroy}>Delete Account</button>
+            </div>
             {
                 (showConfirm) ?
                 <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "30vw"}} class="alert alert-warning" role="alert">
@@ -97,6 +129,20 @@ export default function Programs(props) {
                     <div class="btn-toolbar">
                         <button class="btn btn-outline-dark" onClick={handleYes}>Yes</button>
                         <button class="btn mx-3 btn-outline-dark" onClick={handleNo}>No</button>
+                    </div>
+                </div>
+                :
+                <></>
+            }
+            {
+                (showDelete) ?
+                <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "30vw"}} class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Confirm Delete</h4>
+                    <p>You are about to delete your account.<br/>Press continue to destroy the '{props.curUser}' account.</p>
+                    <hr />
+                    <div class="btn-toolbar">
+                        <button class="btn btn-outline-dark" onClick={handleCancel}>Cancel</button>
+                        <button class="btn mx-3 btn-outline-danger" onClick={handleContinue}>Continue</button>
                     </div>
                 </div>
                 :

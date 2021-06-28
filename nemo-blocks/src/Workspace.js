@@ -27,7 +27,7 @@ export default function Workspace(props) {
     function workspaceDidChange(workspace) {
         let code = Blockly.JavaScript.workspaceToCode(workspace);
         code = "'use strict';\n" + 
-        code + "module.exports = {\n" + 
+        code + "\n\nmodule.exports = {\n" + 
         "  filename: '" + filename.replaceAll("'", "\\'") + "',\n" + 
         "  title: '" + title.replaceAll("'", "\\'") + "',\n" +
         "  introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll("'", "\\'").replaceAll('\n', "','")) + "'") + "],\n" + 
@@ -99,8 +99,14 @@ export default function Workspace(props) {
             if (body.stat.includes("success") || body.stat.includes("Success")) {
                 setCurId(body.val);
                 setLastSaved(JSON.stringify({user: props.curUser, id: body.val, filename: filename, title: title, intro: intro, program: xml}));
+                if (/\n\s*\/\/\s*ERROR:/mg.test(javascriptCode)) {
+                    setDlg("Saved with errors.");
+                } else {
+                    setDlg(body.stat);
+                }
+            } else {
+                setDlg(body.stat);
             }
-            setDlg(body.stat);
             setShowDlg(true);
         }
     };
@@ -139,7 +145,7 @@ export default function Workspace(props) {
     });
 
     return (
-        <div style={{width: "100%"}} class="container-fluid px-0">
+        <div style={{width: "100vw", overflow: "hidden"}} class="container-fluid px-0">
             { (initialXml !== "") ?
             <div class="row">
                 <div class="col-12 col-md-7 col-xl-8 px-0">
@@ -168,24 +174,15 @@ export default function Workspace(props) {
                         onXmlChange={setXml}
                     />
                 </div>
-                <div style={{height: "100%"}} class="col-12 col-md-5 col-xl-4 px-0">
+                <div style={{height: "100vh", maxHeight: "100vh"}} class="col-12 col-md-5 col-xl-4 pl-0 pr-4">
                     { (!showMore) ? 
-                    <textarea
-                        class="h-90"
-                        id="code"
-                        rows="38"
-                        style={{
-                            width: "100%", 
-                            resize: "none", 
-                            whiteSpace: "pre",
-                            overflowX: "scroll", 
-                            fontSize: "1.6vh", 
-                            border: "none", 
-                            fontFamily: "monospace"
-                        }}
-                        value={javascriptCode}
-                        readOnly
-                    ></textarea>
+                    <div style={{overflowX: "scroll", overflowY: "scroll", height: "90vh", maxHeight: "90vh"}} class="mb-3 px-3 mt-3">
+                        {javascriptCode.split("\n").map((i,key) => {
+                            if(i === "") return <div style={{fontFamily: "monospace", height: "2.5vh"}}>{' '}</div>;
+                            if (/^\s*\/\/\s*ERROR:/mg.test(i)) return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre", color:"red"}} key={key}>{i}</div>;
+                            return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre"}} key={key}>{i}</div>;
+                        })}
+                    </div>
                     : 
                     <>
                     <div class="input-group mb-3 form-g px-3 pt-3">
@@ -225,18 +222,27 @@ export default function Workspace(props) {
             <>Loading workspace...</>
             }
             { (showDlg) ?
-                (dlg.includes("success") || dlg.includes("Success")) ?
-                <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "20vw"}} 
-                    class="alert alert-success alert-dismissible fade show" r
-                    ole="alert" onClick={e => setShowDlg(false)}>
-                    <strong>x {dlg}</strong>
-                </div>
-                :
-                <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "20vw"}} 
-                    class="alert alert-danger alert-dismissible fade show" r
-                    ole="alert" onClick={e => setShowDlg(false)}>
-                    <strong>x {dlg}</strong>
-                </div>
+                (
+                    (dlg.includes("success") || dlg.includes("Success")) ?
+                    <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "20vw"}} 
+                        class="alert alert-success alert-dismissible fade show" r
+                        ole="alert" onClick={e => setShowDlg(false)}>
+                        <strong>x {dlg}</strong>
+                    </div>
+                    :
+                    (dlg === "Saved with errors.") ?
+                    <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "20vw"}} 
+                        class="alert alert-warning alert-dismissible fade show" r
+                        ole="alert" onClick={e => setShowDlg(false)}>
+                        <strong>x {dlg}</strong>
+                    </div>
+                    :
+                    <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "20vw"}} 
+                        class="alert alert-danger alert-dismissible fade show" r
+                        ole="alert" onClick={e => setShowDlg(false)}>
+                        <strong>x {dlg}</strong>
+                    </div>
+                )
                 :
                 <></>
             }

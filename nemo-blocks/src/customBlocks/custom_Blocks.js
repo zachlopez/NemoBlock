@@ -50,6 +50,7 @@ Blockly.JavaScript['say'] = function(block) {
     // TODO: Assemble JavaScript into code variable.
     if (value_dialogue === "") value_dialogue = "''";
     var code = "" + 
+        "// ERROR: this 'say' block needs to be in a 'start' or 'repeat' block - " + value_dialogue + "\n" + 
         "say(" + value_dialogue + ").then(() => {\n" + 
             statements_actions + 
         "});\n";
@@ -75,15 +76,15 @@ Blockly.Blocks['send_image'] = {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     // TODO: Assemble JavaScript into code variable.
-    var code;
+    var code = "// ERROR: this 'send image' block needs to be in a 'start' or 'repeat' block - " + value_url + "\n";
     if (isValidImageUrl(value_url)) {
-        code = "" + 
+        code = code + 
         "say({attachment: 'image', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
     else {
-        code = "" + 
+        code = code + 
         "// ERROR: Image URL invalid. Must start with 'https://' or 'http://' and end with jpeg/jpg/gif/png/svg\n" + 
         "say('Included image was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
@@ -111,15 +112,15 @@ Blockly.Blocks['send_image'] = {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     // TODO: Assemble JavaScript into code variable.
-    var code;
+    var code = "// ERROR: this 'send video' block needs to be in a 'start' or 'repeat' block - " + value_url + "\n";
     if (isValidVideoUrl(value_url)) {
-        code = "" + 
+        code = code + 
         "say({attachment: 'video', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
     else {
-        code = "" + 
+        code = code + 
         "// ERROR: Video URL invalid. Must start with 'https://' or 'http://' and end with mp3/wav/aiff/aac/flac\n" + 
         "say('Included video was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
@@ -147,15 +148,15 @@ Blockly.Blocks['send_image'] = {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     // TODO: Assemble JavaScript into code variable.
-    var code;
+    var code = "// ERROR: this 'send audio' block needs to be in a 'start' or 'repeat' block - " + value_url + "\n";
     if (isValidAudioUrl(value_url)) {
-        code = "" + 
+        code = code + 
         "say({attachment: 'audio', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
     }
     else {
-        code = "" + 
+        code = code + 
         "// ERROR: Audio URL invalid. Must start with 'https://' or 'http://' and end with mp4/avi/mov/flv/wmv\n" + 
         "say('Included audio was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
@@ -184,8 +185,9 @@ Blockly.JavaScript['ask'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     if (value_dialogue === "") value_dialogue = "''";
-    statements_actions = statements_actions.replaceAll("// ERROR: the following option must be in an 'ask' block - ", "// new option for ")
+    statements_actions = statements_actions.replaceAll("// ERROR: the following option must be in an 'ask' block - ", "// new option for ");
     var code = "" + 
+        "// ERROR: this 'ask' block needs to be in a 'start' or 'repeat' block - " + value_dialogue + "\n" +
         "const curPayload = summarizeVariables();\n" +
         "let options = [];\n" + 
         statements_actions.replaceAll("\n  ", "\n").substring(2) + 
@@ -365,6 +367,7 @@ Blockly.JavaScript['start'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     var varList = Blockly.Variables.allUsedVarModels(block.workspace);
     var unique_payload = Blockly.JavaScript.variableDB_.getDistinctName('payload', Blockly.Variables.NAME_TYPE);
+    statements_actions = statements_actions.replaceAll(/\n|^\s*\/\/\s*ERROR: this '.+' block needs to be in a 'start' or 'repeat' block -.*\n/gm, "\n");
     var code = "" +
         "// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
@@ -402,6 +405,7 @@ Blockly.Blocks['repeat'] = {
 
 Blockly.JavaScript['repeat'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
+    statements_actions = statements_actions.replaceAll(/\n|^\s*\/\/\s*ERROR: this '.+' block needs to be in a 'start' or 'repeat' block -.*\n/gm, "\n");
     var code =  "// repeated every time a button is pressed\n" + 
     "const state = (payload, say, sendButton) => { \n" + 
         "  updateVariables(JSON.parse(payload)); \n" + 
@@ -413,4 +417,3 @@ Blockly.JavaScript['repeat'] = function(block) {
 // TODO: Error check for options out of place
 // TODO: Error check for infinite loops
 // TODO: Error check for variables with name 'state' and 'start' and other function names and curPayload and options
-// TODO: Add a read me first thing

@@ -33,11 +33,11 @@ export default function Login(props) {
             return;
         }
         const response = await fetch('/create', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({pass: passField, user: userField}),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({pass: passField, user: userField}),
         });
         let body = await response.text();
         body = JSON.parse(body);
