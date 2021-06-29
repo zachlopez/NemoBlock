@@ -106,7 +106,7 @@ app.post('/save', (req, res) => {
       console.error(err.message);
       res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
     } else if (row) { // if the row exists
-      res.send(JSON.stringify({stat: 'You already have a program with this title. Please change before saving.'}));
+      res.send(JSON.stringify({stat: 'You already have a program with this filename. Please change before saving.'}));
     } else {
       db.get(selectSQL, [req.body.id, req.body.user], (err, row) => {
         if (err) {

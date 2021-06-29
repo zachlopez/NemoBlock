@@ -129,6 +129,14 @@ const toolbox = {
           },
           {
             kind: "block",
+            type: "new_line",
+          },
+          {
+            kind: "block",
+            type: "text_from",
+          },
+          {
+            kind: "block",
             type: "text_join",
           },
           {

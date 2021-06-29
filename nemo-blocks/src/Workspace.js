@@ -16,6 +16,7 @@ export default function Workspace(props) {
     const [showDlg, setShowDlg] = useState(false);
     const [showMore, setShowMore] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
     const [stalledProcess, setStalledProcess] = useState("");
     const [lastSaved, setLastSaved] = useState(JSON.stringify({user: props.curUser, id: "-1", filename: "", title: "", intro: "", program: tmpXml}));
     const [initialXml, setInitialXml] = useState("");
@@ -27,6 +28,7 @@ export default function Workspace(props) {
     function workspaceDidChange(workspace) {
         let code = Blockly.JavaScript.workspaceToCode(workspace);
         code = "'use strict';\n" + 
+        "var say, sendButton;\n" + 
         code + "\n\nmodule.exports = {\n" + 
         "  filename: '" + filename.replaceAll("'", "\\'") + "',\n" + 
         "  title: '" + title.replaceAll("'", "\\'") + "',\n" +
@@ -109,6 +111,65 @@ export default function Workspace(props) {
             }
             setShowDlg(true);
         }
+    };
+
+    let handleSaveAs = async e => {
+        e.preventDefault();
+        if (title.trim() === "" || filename.trim() === "") {
+            setDlg("Title or filename are empty. Click the 'More' button to edit them.");
+            setShowDlg(true);
+        } else if (props.curUser === "") {
+            setDlg("Please login before saving.");
+            setShowDlg(true);
+        } else {
+            const response = await fetch('/save', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({user: props.curUser, id: "-1", filename: filename, title: title, intro: intro, program: xml}),
+            });
+            let body = await response.text();
+            body = JSON.parse(body);
+            if (body.stat.includes("success") || body.stat.includes("Success")) {
+                setCurId(body.val);
+                setLastSaved(JSON.stringify({user: props.curUser, id: body.val, filename: filename, title: title, intro: intro, program: xml}));
+                if (/\n\s*\/\/\s*ERROR:/mg.test(javascriptCode)) {
+                    setDlg("Saved with errors.");
+                } else {
+                    setDlg(body.stat);
+                }
+            } else {
+                setDlg(body.stat);
+            }
+            setShowDlg(true);
+        }
+    }
+
+    let handleDelete = async e => {
+        e.preventDefault();
+        setShowDelete(true);
+    };
+
+    let handleContinue = async e => {
+        e.preventDefault();
+        const response = await fetch('/delete', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user: props.curUser, id: curId}),
+        });
+        let body = await response.text();
+        body = JSON.parse(body);
+        setShowDelete(false);
+        setDlg(body.stat);
+        if (body.stat !== "Success") props.setPage("Programs");
+    };
+
+    let handleCancel = async e => {
+        e.preventDefault();
+        setShowDelete(false);
     };
 
     useEffect(() => {
@@ -207,6 +268,16 @@ export default function Workspace(props) {
                         ></textarea>
                     </div>
                     <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
+                        <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleSaveAs}>Save as Copy</button>
+                    </div>
+                    {(curId !== "-1") ? 
+                        <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
+                            <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleDelete}>Delete</button>
+                        </div>
+                        :
+                        <></> 
+                    }
+                    <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
                         <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleLogout}>Logout</button>
                     </div>
                     </>
@@ -255,6 +326,20 @@ export default function Workspace(props) {
                     <div class="btn-toolbar">
                         <button class="btn btn-outline-dark" onClick={handleYes}>Yes</button>
                         <button class="btn mx-3 btn-outline-dark" onClick={handleNo}>No</button>
+                    </div>
+                </div>
+                :
+                <></>
+            }
+            {
+                (showDelete) ?
+                <div style={{position:"fixed", top:"1em", right:"0", left:"0", margin:"auto", width: "30vw"}} class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Confirm Delete</h4>
+                    <p>You are about to delete the {filename} program.<br/>Press continue to destroy this file.</p>
+                    <hr />
+                    <div class="btn-toolbar">
+                        <button class="btn btn-outline-dark" onClick={handleCancel}>Cancel</button>
+                        <button class="btn mx-3 btn-outline-dark" onClick={handleContinue}>Continue</button>
                     </div>
                 </div>
                 :
