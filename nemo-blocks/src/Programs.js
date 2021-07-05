@@ -8,6 +8,7 @@ export default function Programs(props) {
     const [delId, setDelId] = useState(-1);
     const [delName, setDelName] = useState("");
     const [showDelete, setShowDelete] = useState(false);
+    const [showNav, setShowNav] = useState(false);
 
     useEffect(() => {
         async function getPrgNames () {
@@ -94,10 +95,32 @@ export default function Programs(props) {
         }
     };
 
+    let handleDocumentationClick = async e => {
+        e.preventDefault();
+        props.setPage("Documentation")
+    };
+
+    let handleFeedbackClick = async e => {
+        e.preventDefault();
+        props.setPage("Feedback")
+    };
+
     return (
         <div class="mx-5 mt-5">
-            <h1>Hello, {props.curUser}!</h1>
-            <div class="card">
+            <div class="navbar navbar-expand-lg navbar-light bg-light">
+                <h3 style={{marginRight: "1rem"}}>NemoBlocks</h3>
+                <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation" onClick={e => setShowNav(!showNav)}>
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class={"navbar-collapse collapse " + ((showNav) ? " show" : "")} aria-expanded="false" aria-label="Toggle navigation">
+                    <div class="navbar-nav">
+                        <div class="nav-item nav-link active">Programs</div>
+                        <div class="nav-item nav-link" onClick={handleDocumentationClick}>Documentation</div>
+                        <div class="nav-item nav-link" onClick={handleFeedbackClick}>Feedback</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-4">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" key="key-1">
                         New Program

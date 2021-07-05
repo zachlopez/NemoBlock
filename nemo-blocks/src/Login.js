@@ -5,6 +5,7 @@ export default function Login(props) {
     const [userField, setUserField] = useState("");
     const [passField, setPassField] = useState("");
     const [dlg, setDlg] = useState("");
+    const [showNav, setShowNav] = useState(false);
 
     let handleLogin = async e => {
         e.preventDefault();
@@ -43,11 +44,34 @@ export default function Login(props) {
         body = JSON.parse(body);
         setDlg(body.stat);
     };
+
+    let handleDocumentationClick = async e => {
+        e.preventDefault();
+        props.setPage("Documentation");
+    };
+
+    let handleFeedbackClick = async e => {
+        e.preventDefault();
+        props.setPage("Feedback");
+    };
+
     return (
         <div class="mx-5 mt-5">
-            <h1>Nemoblocks</h1>
+            <div class="navbar navbar-expand-lg navbar-light bg-light">
+                <h3 style={{marginRight: "1rem"}}>NemoBlocks</h3>
+                <button class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation" onClick={e => setShowNav(!showNav)}>
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class={"navbar-collapse collapse " + ((showNav) ? " show" : "")} aria-expanded="false" aria-label="Toggle navigation">
+                    <div class="navbar-nav">
+                        <div class="nav-item nav-link active">Login</div>
+                        <div class="nav-item nav-link" onClick={handleDocumentationClick}>Documentation</div>
+                        <div class="nav-item nav-link" onClick={handleFeedbackClick}>Feedback</div>
+                    </div>
+                </div>
+            </div>
             {(dlg !== "")? ((dlg !== "Success!") ? <div class="alert alert-danger" role="alert">{dlg}</div>: <div class="alert alert-success" role="alert">{dlg}</div>) : <></>}
-            <div class="input-group mb-3 form-g">
+            <div class="input-group mb-3 form-g mt-4">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Username</span>
                 </div>

@@ -28,6 +28,30 @@ function isValidAudioUrl(urlString) {
     return(isValidHttpUrl(url) && url.match(/\.(mp3|wav|aiff|aac|flac)($|\?)/) != null);
 }
 
+function isOptionInOption(block) {
+    var curBlock = block;
+    while (curBlock.getSurroundParent() !== null && !['option_do', 'option_do_only'].includes(curBlock.getSurroundParent().type)) {
+        curBlock = curBlock.getSurroundParent();
+    }
+    return curBlock.getSurroundParent() !== null;
+}
+
+function isValidOption(block) {
+    var curBlock = block;
+    while (curBlock.getSurroundParent() !== null && !['ask'].includes(curBlock.getSurroundParent().type)) {
+        curBlock = curBlock.getSurroundParent();
+    }
+    return curBlock.getSurroundParent() !== null;
+}
+
+function isValidSay(block) {
+    var curBlock = block;
+    while (curBlock.getSurroundParent() !== null && !['ask', 'option_do', 'option_do_only'].includes(curBlock.getSurroundParent().type)) {
+        curBlock = curBlock.getSurroundParent();
+    }
+    return curBlock.getSurroundParent() === null;
+}
+
 Blockly.Blocks['say'] = {
     init: function() {
         this.appendValueInput("DIALOGUE")
@@ -39,7 +63,7 @@ Blockly.Blocks['say'] = {
         this.setInputsInline(true);
         this.setPreviousStatement(true, 'action');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Nemobot sends a message then does the nested blocks.");
         this.setHelpUrl("");
     }
 };
@@ -52,6 +76,9 @@ Blockly.JavaScript['say'] = function(block) {
     var code = "";
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'say' block needs to be in a 'start','repeat', or function block - " + value_dialogue + "\n";
+        block.setColour("#FF2222");
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'say' block needs to be outside an 'ask' or 'option' block - " + value_dialogue + "\n";
         block.setColour("#FF2222");
     } else {
         block.setColour("#a5805b");
@@ -73,7 +100,7 @@ Blockly.Blocks['send_image'] = {
             .appendField("then");
         this.setPreviousStatement(true, 'action');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Nemobot sends an image then does the nested blocks.");
         this.setHelpUrl("");
     }
   };
@@ -85,6 +112,9 @@ Blockly.Blocks['send_image'] = {
     var code = "";
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send image' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        block.setColour("#FF2222");
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send image' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
         block.setColour("#FF2222");
     } else {
         block.setColour("#a5805b");
@@ -117,7 +147,7 @@ Blockly.Blocks['send_image'] = {
             .appendField("then");
         this.setPreviousStatement(true, 'action');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Nemobot sends a video then does the nested blocks.");
         this.setHelpUrl("");
     }
   };
@@ -129,6 +159,9 @@ Blockly.Blocks['send_image'] = {
     var code = "";
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send video' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        block.setColour("#FF2222");
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send video' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
         block.setColour("#FF2222");
     } else {
         block.setColour("#a5805b");
@@ -161,7 +194,7 @@ Blockly.Blocks['send_image'] = {
           .appendField("then");
       this.setPreviousStatement(true, 'action');
       this.setColour(30);
-   this.setTooltip("");
+   this.setTooltip("Nemobot sends an audio file then does the nested blocks.");
    this.setHelpUrl("");
     }
   };
@@ -173,6 +206,9 @@ Blockly.Blocks['send_image'] = {
     var code = "";
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send audio' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        block.setColour("#FF2222");
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send audio' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
         block.setColour("#FF2222");
     } else {
         block.setColour("#a5805b");
@@ -206,7 +242,7 @@ Blockly.Blocks['ask'] = {
         this.setInputsInline(true);
         this.setPreviousStatement(true, 'action');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Nemobot sends a question. The options the user can choose are determined by the nested option blocks.");
         this.setHelpUrl("");
     }
 };
@@ -215,18 +251,20 @@ Blockly.JavaScript['ask'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     if (value_dialogue === "") value_dialogue = "''";
-    statements_actions = statements_actions.replaceAll("// ERROR: the following option must be in an 'ask' block - ", "// new option for ");
     var code = "";
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'ask' block needs to be in a 'start','repeat', or function block - " + value_dialogue + "\n";
         block.setColour("#FF2222");
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'ask' block needs to be outside an 'ask' or 'option' block - " + value_dialogue + "\n";
+        block.setColour("#FF2222");
     } else {
         block.setColour("#a5805b");
     }
-    var code = code + 
-        "const curPayload = summarizeVariables();\n" +
+    code = code + 
+        "const curPayload = JSON.parse(summarizeVariables());\n" +
         "let options = [];\n" + 
-        statements_actions.replaceAll("\n  ", "\n").substring(2) + 
+        statements_actions.replaceAll("\n  ", "\n").substring(2) +
         "sendButton(" + value_dialogue + ", options);\n";
     return code;
 };
@@ -245,7 +283,7 @@ Blockly.Blocks['option'] = {
         this.setPreviousStatement(true, 'option');
         this.setNextStatement(true, 'option');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Adds an option. If chosen, it will update the given variable and goes back to the top of the repeat block.");
         this.setHelpUrl("");
     }
 };
@@ -256,11 +294,21 @@ Blockly.JavaScript['option'] = function(block) {
     var value_payload_val = Blockly.JavaScript.valueToCode(block, 'PAYLOAD_VAL', Blockly.JavaScript.ORDER_ATOMIC);
     if (value_title === "") value_title = "''";
     if (value_payload_val === "") value_payload_val = "''";
-    var code = "" + 
-        "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" +  
+    var code = "";
+    if (!isValidOption(block)) {
+        code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else if (isOptionInOption(block)) {
+        code = code + "// ERROR: the following option must be outside other options - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else {
+        code = code + "// " + value_title + " option\n";
+        block.setColour("#a5805b");
+    }
+    code = code +  
         "updateVariables(curPayload); // restores variables \n" + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n";
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
     return code;
 };
 
@@ -275,7 +323,7 @@ Blockly.Blocks['option_only'] = {
         this.setPreviousStatement(true, 'option');
         this.setNextStatement(true, 'option');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Adds an option. If chosen, nothing changes, but it still goes back to the top of the repeat block.");
         this.setHelpUrl("");
     }
 };
@@ -283,10 +331,20 @@ Blockly.Blocks['option_only'] = {
 Blockly.JavaScript['option_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     if (value_title === "") value_title = "''";
-    var code = "" + 
-        "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
+    var code = "";
+    if (!isValidOption(block)) {
+        code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else if (isOptionInOption(block)) {
+        code = code + "// ERROR: the following option must be outside other options - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else {
+        code = code + "// " + value_title + " option\n";
+        block.setColour("#a5805b");
+    }
+    code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
     return code;
 };
 
@@ -309,7 +367,7 @@ Blockly.Blocks['option_do'] = {
         this.setPreviousStatement(true, 'option');
         this.setNextStatement(true, 'option');
         this.setColour(30);
-        this.setTooltip("Changes to variables are reflected only if this option is chosen.");
+        this.setTooltip("Adds an option. If chosen, it will do the nested blocks, update the given variable, and go back to the top of the repeat block.");
         this.setHelpUrl("");
     }
   };
@@ -321,12 +379,22 @@ Blockly.Blocks['option_do'] = {
     var value_payload_val = Blockly.JavaScript.valueToCode(block, 'PAYLOAD_VAL', Blockly.JavaScript.ORDER_ATOMIC);
     if (value_title === "") value_title = "''";
     if (value_payload_val === "") value_payload_val = "''";
-    var code = "" + 
-        "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
+    var code = "";
+    if (!isValidOption(block)) {
+        code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else if (isOptionInOption(block)) {
+        code = code + "// ERROR: the following option must be outside other options - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else {
+        code = code + "// " + value_title + " option\n";
+        block.setColour("#a5805b");
+    }
+    code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
     return code;
   };
 
@@ -344,7 +412,7 @@ Blockly.Blocks['option_do_only'] = {
         this.setPreviousStatement(true, 'option');
         this.setNextStatement(true, 'option');
         this.setColour(30);
-        this.setTooltip("Changes to variables are reflected only if this option is chosen.");
+        this.setTooltip("Adds an option. If chosen, it will do the nested blocks and go back to the top of the repeat block.");
         this.setHelpUrl("");
     }
 };
@@ -353,11 +421,21 @@ Blockly.JavaScript['option_do_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     if (value_title === "") value_title = "''";
-    var code = "" + 
-        "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
+    var code = "";
+    if (!isValidOption(block)) {
+        code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else if (isOptionInOption(block)) {
+        code = code + "// ERROR: the following option must be outside other options - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else {
+        code = code + "// " + value_title + " option\n";
+        block.setColour("#a5805b");
+    }
+    code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
-        "options.push({title: " + value_title +", payload: JSON.stringify(summarizeVariables())});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
     return code;
 };
 
@@ -373,7 +451,7 @@ Blockly.Blocks['option_restart'] = {
         this.setPreviousStatement(true, 'option');
         this.setNextStatement(true, 'option');
         this.setColour(30);
-        this.setTooltip("");
+        this.setTooltip("Adds an option. If chosen, all variables are reset and it goes back to the start block.");
         this.setHelpUrl("");
     }
 };
@@ -381,8 +459,18 @@ Blockly.Blocks['option_restart'] = {
 Blockly.JavaScript['option_restart'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     if (value_title === "") value_title = "''";
-    var code = "" + 
-        "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n" + 
+    var code = "";
+    if (!isValidOption(block)) {
+        code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else if (isOptionInOption(block)) {
+        code = code + "// ERROR: the following option must be outside other options - " + value_title + "\n";
+        block.setColour("#FF2222");
+    } else {
+        code = code + "// " + value_title + " option\n";
+        block.setColour("#a5805b");
+    }
+    code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
         "options.push({title: " + value_title +", payload: 'restart'});\n"
     return code;
@@ -394,32 +482,14 @@ Blockly.Blocks['start'] = {
             .setCheck(null)
             .appendField("start");
         this.setColour(15);
-        this.setTooltip("");
+        this.setTooltip("Nested blocks are run at the start of the program or when the restart option is chosen. All variables are reset to null.");
         this.setHelpUrl("");
     }
 };
 
 Blockly.JavaScript['start'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    var varList = Blockly.Variables.allUsedVarModels(block.workspace);
-    var unique_payload = Blockly.JavaScript.variableDB_.getDistinctName('payload', Blockly.Variables.NAME_TYPE);
     var code = "" +
-        "// puts all used variables in a dictionary object\n" + 
-        "const summarizeVariables = () => { \n" +
-            "  return { \n" +
-                varList.reduce((sum, cur)  => sum + "    " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ",\n", "") + 
-            "  }; \n" + 
-        "}; \n\n\n" +   
-        "// updates all used variables based on the payload dictionary object \n" + 
-        "const updateVariables = (" + unique_payload + ") => { \n" + 
-            varList.reduce((sum, cur)  => {
-                let newSum = sum;
-                let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
-                let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say"];
-                if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
-                return newSum + "  " + varName + " = " + unique_payload + "." + varName + ";\n";
-            }, "") + 
-        "}; \n\n\n" +
         "// run at the start of the program or when restart option is chosen\n" + 
         "const start = (sayIn, sendButtonIn) => { \n" + 
             "  say = sayIn;\n" +
@@ -435,7 +505,7 @@ Blockly.Blocks['repeat'] = {
             .setCheck(null)
             .appendField("repeat");
         this.setColour(15);
-        this.setTooltip("");
+        this.setTooltip("Nested blocks are run whenever an option is chosen by a user after Nemobot asks a question. ");
         this.setHelpUrl("");
     }
 };
@@ -458,7 +528,7 @@ Blockly.Blocks['new_line'] = {
             .appendField("new line");
         this.setOutput(true, "String");
         this.setColour(160);
-        this.setTooltip("");
+        this.setTooltip("Returns a new line character like pressing the enter button.");
         this.setHelpUrl("");
     }
 };
@@ -475,7 +545,7 @@ Blockly.Blocks['text_from'] = {
             .appendField("text from");
         this.setOutput(true, "String");
         this.setColour(160);
-        this.setTooltip("");
+        this.setTooltip("Returns a string or text version of the input.");
         this.setHelpUrl("");
     }
 };
@@ -486,8 +556,32 @@ Blockly.JavaScript['text_from'] = function(block) {
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-// TODO: Error check for options out of place
+Blockly.Blocks['random_number'] = {
+    init: function() {
+        this.appendValueInput("START")
+            .setCheck(null)
+            .appendField("random number from");
+        this.appendValueInput("END")
+            .setCheck(null)
+            .appendField("to");
+        this.setInputsInline(true);
+        this.setOutput(true, null);
+        this.setColour(230);
+        this.setTooltip("Return a random integer between the two specified limits, inclusive.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['random_number'] = function(block) {
+    var value_start = Blockly.JavaScript.valueToCode(block, 'START', Blockly.JavaScript.ORDER_ATOMIC) | "0";
+    var value_end = Blockly.JavaScript.valueToCode(block, 'END', Blockly.JavaScript.ORDER_ATOMIC) | "0";
+    // TODO: Assemble JavaScript into code variable.
+    var code = 'Math.floor(Math.random() * Math.abs(' + value_end + ' - ' + value_start + ' + 1) + ' + value_start + ')';
+    // TODO: Change ORDER_NONE to the correct strength.
+    return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
 // TODO: Error check for infinite loops
-// TODO: Error check for variables with name 'state' and 'start' and other function names and curPayload and options
-// TODO: adding way to do say, sendButton, and payload in functions 
-// TODO: color error options?
+// TODO: API/Axios
+// TODO: Documentation
+// TODO: Replace random integer blocks in db with random number blocks

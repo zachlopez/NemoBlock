@@ -8,6 +8,7 @@ export default function Workspace(props) {
     const tmpXml = '<xml xmlns="https://developers.google.com/blockly/xml"><block type="start" id="6_S},[q^:L,cFM/+.=gR" deletable="false" x="10" y="10"></block><block type="repeat" id=";OK~g^Rs@TDIso-B]w1{" deletable="false" x="470" y="10"></block></xml>';
     const [xml, setXml] = useState("");
     const [javascriptCode, setJavascriptCode] = useState("");
+    const [selectedCode, setSelectedCode] = useState("");
     const [curId, setCurId] = useState("-1");
     const [filename, setFilename] = useState("");
     const [title, setTitle] = useState("");
@@ -21,15 +22,77 @@ export default function Workspace(props) {
     const [lastSaved, setLastSaved] = useState(JSON.stringify({user: props.curUser, id: "-1", filename: "", title: "", intro: "", program: tmpXml}));
     const [initialXml, setInitialXml] = useState("");
     
+    function generateDefProcedureCode(block) {
+        // Define a procedure with a return value.
+        var funcName = block.getFieldValue('NAME');
+        var xfix1 = '';
+        if (Blockly.JavaScript.STATEMENT_PREFIX) {
+        xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_PREFIX,
+            block);
+        }
+        if (Blockly.JavaScript.STATEMENT_SUFFIX) {
+        xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_SUFFIX,
+            block);
+        }
+        if (xfix1) {
+        xfix1 = Blockly.JavaScript.prefixLines(xfix1, Blockly.JavaScript.INDENT);
+        }
+        var loopTrap = '';
+        if (Blockly.JavaScript.INFINITE_LOOP_TRAP) {
+        loopTrap = Blockly.JavaScript.prefixLines(
+            Blockly.JavaScript.injectId(Blockly.JavaScript.INFINITE_LOOP_TRAP,
+            block), Blockly.JavaScript.INDENT);
+        }
+        var branch = Blockly.JavaScript.statementToCode(block, 'STACK');
+        var returnValue = Blockly.JavaScript.valueToCode(block, 'RETURN',
+            Blockly.JavaScript.ORDER_NONE) || '';
+        var xfix2 = '';
+        if (branch && returnValue) {
+        // After executing the function body, revisit this block for the return.
+        xfix2 = xfix1;
+        }
+        if (returnValue) {
+        returnValue = Blockly.JavaScript.INDENT + 'return ' + returnValue + ';\n';
+        }
+        var args = [];
+        var variables = block.getVars();
+        for (var i = 0; i < variables.length; i++) {
+        args[i] = Blockly.JavaScript.nameDB_.getName(variables[i],
+            Blockly.VARIABLE_CATEGORY_NAME);
+        }
+        var code = 'function ' + funcName + '(' + args.join(', ') + ') {\n' +
+            xfix1 + loopTrap + branch + xfix2 + returnValue + '}';
+        return Blockly.JavaScript.scrub_(block, code);
+    }
+    
     function wasEdited() {
         return JSON.stringify({user: props.curUser, id: curId, filename: filename, title: title, intro: intro, program: xml}) !== lastSaved;
     }
     
     function workspaceDidChange(workspace) {
+        var varList = Blockly.Variables.allUsedVarModels(workspace);
         let code = Blockly.JavaScript.workspaceToCode(workspace);
+        let codeLines = code.split("\n");
         code = "'use strict';\n" + 
         "var say, sendButton;\n" + 
-        code + "\n\nmodule.exports = {\n" + 
+        codeLines[0] + codeLines[1] + 
+        "\n\n// puts all used variables in a dictionary object\n" + 
+        "const summarizeVariables = () => { \n" +
+            "  return JSON.stringify({ \n" +
+                varList.reduce((sum, cur)  => sum + "    " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + " | '',\n", "") + 
+            "  }); \n" + 
+        "}; \n\n\n" +   
+        "// updates all used variables based on the payload dictionary object \n" + 
+        "const updateVariables = (payload) => { \n" + 
+            varList.reduce((sum, cur)  => {
+                let newSum = sum;
+                let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
+                let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say", "sayIn", "sendButtonIn", "payload"];
+                if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
+                return newSum + "  " + varName + " = payload." + varName + " | '';\n";
+            }, "") + 
+        "}; \n\n\n" +
+        codeLines.slice(2).join("\n") + "\n\nmodule.exports = {\n" + 
         "  filename: '" + filename.replaceAll("'", "\\'") + "',\n" + 
         "  title: '" + title.replaceAll("'", "\\'") + "',\n" +
         "  introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll("'", "\\'").replaceAll('\n', "','")) + "'") + "],\n" + 
@@ -37,7 +100,85 @@ export default function Workspace(props) {
         "  state: state,\n" + 
         "};\n"
         setJavascriptCode(code);
+        try {
+            var messyCurCode = "";
+            var curBlock = Blockly.selected;
+            var messyNxtCode = "";
+            var nxtBlock = curBlock.getNextBlock();
+
+            if (curBlock === null) {
+                messyCurCode = "";
+            } else if (curBlock.type.includes('procedures')) {
+                if (curBlock.type.includes('call')) {
+                    messyCurCode = Blockly.JavaScript['procedures_callnoreturn'](curBlock);
+                } else {
+                    messyCurCode = generateDefProcedureCode(curBlock);
+                }
+            } else {
+                var line = Blockly.JavaScript.blockToCode(curBlock);
+                if (Array.isArray(line)) {
+                // Value blocks return tuples of code and operator order.
+                // Top-level blocks don't care about operator order.
+                    line = line[0];
+                }
+                if (line) {
+                    messyCurCode = line;
+                } else {
+                    messyCurCode = "";
+                }
+            }
+
+            if (nxtBlock === null) {
+                messyNxtCode = "";
+            } else if (nxtBlock.type.includes('procedures')) {
+                if (nxtBlock.type.includes('call')) {
+                    messyNxtCode = Blockly.JavaScript['procedures_callnoreturn'](nxtBlock);
+                } else {
+                    messyNxtCode = generateDefProcedureCode(nxtBlock);
+                }
+            } else {
+                var nxtLine = Blockly.JavaScript.blockToCode(nxtBlock);
+                if (Array.isArray(nxtLine)) {
+                    // Value blocks return tuples of code and operator order.
+                    // Top-level blocks don't care about operator order.
+                    nxtLine = nxtLine[0];
+                }
+                if (nxtLine) {
+                    messyNxtCode = nxtLine;
+                } else {
+                    messyNxtCode = "";
+                }
+            }
+            
+            varList.forEach((varModel) => {
+                // Serialize variable id
+                var curId = varModel.getId().replaceAll('`', '_60');
+                curId = curId.replaceAll('|', '_7C');
+                curId = curId.replaceAll('%', '_25');
+                curId = curId.replaceAll('^', '_5E');
+                curId = curId.replaceAll('{', '_7B');
+                curId = curId.replaceAll('}', '_7D');
+                curId = curId.replaceAll('[', '_5B');
+                curId = curId.replaceAll(']', '_5D');
+                curId = curId.replaceAll(/[^\w\s]/gi, '_');
+                messyCurCode = messyCurCode.replaceAll(curId, Blockly.JavaScript.variableDB_.getName(varModel.name, Blockly.Variables.NAME_TYPE));
+                messyNxtCode = messyNxtCode.replaceAll(curId, Blockly.JavaScript.variableDB_.getName(varModel.name, Blockly.Variables.NAME_TYPE));
+            });
+
+            var lastIndex = messyCurCode.lastIndexOf(messyNxtCode);
+            setSelectedCode(messyCurCode.substring(0,lastIndex));
+        }
+        catch(err) {
+            setSelectedCode("");
+        }
     }
+
+    let handleCopy = async e => {
+        e.preventDefault();
+        navigator.clipboard.writeText(javascriptCode);
+        setDlg("Successfully copied!");
+        setShowDlg(true);
+    };
 
     let handleLogout = async e => {
         e.preventDefault();
@@ -203,7 +344,7 @@ export default function Workspace(props) {
                 handleLoad();
             }
         }
-    });
+    }, [initialXml, props.curUser, props.newId]);
 
     return (
         <div style={{width: "100vw", overflow: "hidden"}} class="container-fluid px-0">
@@ -237,13 +378,29 @@ export default function Workspace(props) {
                 </div>
                 <div style={{height: "100vh", maxHeight: "100vh"}} class="col-12 col-md-5 col-xl-4 pl-0 pr-4">
                     { (!showMore) ? 
-                    <div style={{overflowX: "scroll", overflowY: "scroll", height: "90vh", maxHeight: "90vh"}} class="mb-3 px-3 mt-3">
-                        {javascriptCode.split("\n").map((i,key) => {
-                            if(i === "") return <div style={{fontFamily: "monospace", height: "2.5vh"}}>{' '}</div>;
-                            if (/^\s*\/\/\s*ERROR:/mg.test(i)) return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre", color:"red"}} key={key}>{i}</div>;
-                            return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre"}} key={key}>{i}</div>;
-                        })}
+                    <>
+                        { (selectedCode === "") ?
+                        <div style={{overflowX: "scroll", overflowY: "scroll", height: "82vh", maxHeight: "90vh"}} class="mb-3 px-3 mt-3">
+                            {javascriptCode.split("\n").map((i,key) => {
+                                if(i === "") return <div style={{fontFamily: "monospace", height: "2.5vh"}}>{' '}</div>;
+                                if (/^\s*\/\/\s*ERROR:/mg.test(i)) return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre", color:"red"}} key={key}>{i}</div>;
+                                return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre"}} key={key}>{i}</div>;
+                            })}
+                        </div>
+                        :
+                        <div style={{overflowX: "scroll", overflowY: "scroll", height: "82vh", maxHeight: "90vh"}} class="mb-3 px-3 mt-3">
+                            <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre"}} key="-1"><strong>Code generated by selected block:</strong></div>
+                            {selectedCode.split("\n").map((i,key) => {
+                                if(i === "") return <div style={{fontFamily: "monospace", height: "2.5vh"}}>{' '}</div>;
+                                if (/^\s*\/\/\s*ERROR:/mg.test(i)) return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre", color:"red"}} key={key}>{i}</div>;
+                                return <div style={{fontFamily: "monospace", height: "2.5vh", fontSize: "1.6vh", whiteSpace:"pre"}} key={key}>{i}</div>;
+                            })}
+                        </div>
+                        }
+                    <div style={{height: "7%"}} class="btn-toolbar d-flex justify-content-around pb-3">
+                        <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleCopy}>Copy</button>
                     </div>
+                    </>
                     : 
                     <>
                     <div class="input-group mb-3 form-g px-3 pt-3">

@@ -5,6 +5,8 @@ import Page from "./Page";
 import Login from "./Login";
 import Programs from "./Programs";
 import Workspace from "./Workspace";
+import Documentation from "./Documentation";
+import Feedback from "./Feedback";
 
 export default function App() {
   const [curUser, setCurUser] = useState("");
@@ -23,6 +25,14 @@ export default function App() {
 
       <Page target="Workspace" current={page}>
         <Workspace shown={"Workspace"===page} setCurUser={setCurUser} curUser={curUser} newId={newId} setPage={setPage}></Workspace>
+      </Page>
+
+      <Page target="Documentation" current={page}>
+        <Documentation shown={"Documentation"===page} curUser={curUser} setPage={setPage}></Documentation>
+      </Page>
+
+      <Page target="Feedback" current={page}>
+        <Feedback shown={"Feedback"===page} curUser={curUser} setPage={setPage}></Feedback>
       </Page>
     </div>
   );

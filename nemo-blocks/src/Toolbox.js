@@ -110,7 +110,7 @@ const toolbox = {
           },
           {
             kind: "block",
-            type: "math_random_int",
+            type: "random_number",
           },
           {
             kind: "block",
@@ -255,15 +255,11 @@ const toolbox = {
           },
           {
             kind: "block",
-            type: "option",
-          },
-          {
-            kind: "block",
             type: "option_only",
           },
           {
             kind: "block",
-            type: "option_do",
+            type: "option",
           },
           {
             kind: "block",
