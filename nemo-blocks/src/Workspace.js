@@ -73,9 +73,17 @@ export default function Workspace(props) {
         var varList = Blockly.Variables.allUsedVarModels(workspace);
         let code = Blockly.JavaScript.workspaceToCode(workspace);
         let codeLines = code.split("\n");
+        let codeStart = "";
+        let codeInit = 0;
+
+        if (codeLines[0].indexOf("var") == 0) {
+            codeStart = codeLines[0] + "\n" + codeLines[1];
+            codeInit = 2;
+        }
+
         code = "'use strict';\n" + 
         "var say, sendButton;\n" + 
-        codeLines[0] + "\n" + codeLines[1] + 
+        codeStart + 
         "\n\n// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return JSON.stringify({ \n" +
@@ -92,7 +100,7 @@ export default function Workspace(props) {
                 return newSum + "  " + varName + " = payload." + varName + " | '';\n";
             }, "") + 
         "}; \n\n\n" +
-        codeLines.slice(2).join("\n") + "\n\nmodule.exports = {\n" + 
+        codeLines.slice(codeInit).join("\n") + "\n\nmodule.exports = {\n" + 
         "  filename: '" + filename.replaceAll("'", "\\'") + "',\n" + 
         "  title: '" + title.replaceAll("'", "\\'") + "',\n" +
         "  introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll("'", "\\'").replaceAll('\n', "','")) + "'") + "],\n" + 
