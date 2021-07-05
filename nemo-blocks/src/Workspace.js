@@ -75,7 +75,7 @@ export default function Workspace(props) {
         let codeLines = code.split("\n");
         code = "'use strict';\n" + 
         "var say, sendButton;\n" + 
-        codeLines[0] + codeLines[1] + 
+        codeLines[0] + "\n" + codeLines[1] + 
         "\n\n// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return JSON.stringify({ \n" +

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
+import Ask from './docImages/Ask.png';
+import Main from './docImages/Main.png';
+import Say from './docImages/Say.png';
 
 export default function Documentation(props) {
     const [showNav, setShowNav] = useState(false);

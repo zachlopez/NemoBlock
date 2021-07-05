@@ -489,7 +489,7 @@ Blockly.Blocks['start'] = {
 
 Blockly.JavaScript['start'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    var code = "" +
+    var code = "\n\n" +
         "// run at the start of the program or when restart option is chosen\n" + 
         "const start = (sayIn, sendButtonIn) => { \n" + 
             "  say = sayIn;\n" +
