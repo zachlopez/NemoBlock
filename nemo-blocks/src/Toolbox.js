@@ -239,15 +239,15 @@ const toolbox = {
           },
           {
             kind: "block",
-            type: "send_image",
+            type: "send_image_new",
           },
           {
             kind: "block",
-            type: "send_video",
+            type: "send_video_new",
           },
           {
             kind: "block",
-            type: "send_audio",
+            type: "send_audio_new",
           },
           {
             kind: "block",
@@ -268,6 +268,37 @@ const toolbox = {
           {
             kind: "block",
             type: "option_restart",
+          },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Advanced",
+        colour: "#9fa55b",
+        contents: [
+          {
+            kind: "block",
+            type: "obj_create",
+          },
+          {
+            kind: "block",
+            type: "obj_get",
+          },
+          {
+            kind: "block",
+            type: "obj_set",
+          },
+          {
+            kind: "block",
+            type: "axios_call",
+          },
+          {
+            kind: "block",
+            type: "axios_call_simple",
+          },
+          {
+            kind: "block",
+            type: "axios_result",
           },
         ],
       },

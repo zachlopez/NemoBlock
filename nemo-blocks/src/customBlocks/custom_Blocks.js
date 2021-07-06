@@ -52,6 +52,14 @@ function isValidSay(block) {
     return curBlock.getSurroundParent() === null;
 }
 
+function isValidAxiosRes(block) {
+    var curBlock = block;
+    while (curBlock.getSurroundParent() !== null && !['axios_call', 'axios_call_simple'].includes(curBlock.getSurroundParent().type)) {
+        curBlock = curBlock.getSurroundParent();
+    }
+    return curBlock.getSurroundParent() !== null;
+}
+
 Blockly.Blocks['say'] = {
     init: function() {
         this.appendValueInput("DIALOGUE")
@@ -71,9 +79,10 @@ Blockly.Blocks['say'] = {
 Blockly.JavaScript['say'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    // TODO: Assemble JavaScript into code variable.
-    if (value_dialogue === "") value_dialogue = "''";
     var code = "";
+
+    if (value_dialogue === "") value_dialogue = "''";
+    
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'say' block needs to be in a 'start','repeat', or function block - " + value_dialogue + "\n";
         block.setColour("#FF2222");
@@ -83,10 +92,12 @@ Blockly.JavaScript['say'] = function(block) {
     } else {
         block.setColour("#a5805b");
     }
+
     code = code + 
         "say(" + value_dialogue + ").then(() => {\n" + 
             statements_actions + 
         "});\n";
+    
     return code;
 };
 
@@ -103,28 +114,29 @@ Blockly.Blocks['send_image'] = {
         this.setTooltip("Nemobot sends an image then does the nested blocks.");
         this.setHelpUrl("");
     }
-  };
+};
 
-  Blockly.JavaScript['send_image'] = function(block) {
+Blockly.JavaScript['send_image'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    // TODO: Assemble JavaScript into code variable.
     var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send image' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
-        block.setColour("#FF2222");
+        hasError = true;
     } else if (!isValidSay(block)) {
         code = code + "// ERROR: this 'send image' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
-        block.setColour("#FF2222");
-    } else {
-        block.setColour("#a5805b");
+        hasError = true;
     }
+
     if (isValidImageUrl(value_url)) {
         code = code + 
         "say({attachment: 'image', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#a5805b");
     }
     else {
         code = code + 
@@ -132,12 +144,71 @@ Blockly.Blocks['send_image'] = {
         "say('Included image was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#FF2222");
+        hasError = true;
     }
-    return code;
-  };
 
-  Blockly.Blocks['send_video'] = {
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
+    return code;
+};
+
+Blockly.Blocks['send_image_new'] = {
+    init: function() {
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send image from the link");
+        this.appendStatementInput("ACTIONS")
+            .setCheck("action")
+            .appendField("then");
+        this.appendDummyInput()
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField("ignore errors?")
+            .appendField(new Blockly.FieldCheckbox("FALSE"), "IGNORE");
+        this.setPreviousStatement(true, null);
+        this.setColour(30);
+        this.setTooltip("Nemobot sends an image then does the nested blocks.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['send_image_new'] = function(block) {
+    var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
+    var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
+    var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
+    var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
+    if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
+        code = code + "// ERROR: this 'send image' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        hasError = true;
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send image' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
+        hasError = true;
+    }
+
+    if (checkbox_ignore || isValidImageUrl(value_url)) {
+        code = code + 
+        "say({attachment: 'image', url:" + value_url + "}).then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+    }
+    else {
+        code = code + 
+        "// ERROR: Image URL invalid. Must start with 'https://' or 'http://' and end with jpeg/jpg/gif/png/svg\n" + 
+        "say('Included image was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+        hasError = true;
+    }
+
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
+    return code;
+};
+
+Blockly.Blocks['send_video'] = {
     init: function() {
         this.appendValueInput("URL")
             .setCheck("String")
@@ -150,75 +221,136 @@ Blockly.Blocks['send_image'] = {
         this.setTooltip("Nemobot sends a video then does the nested blocks.");
         this.setHelpUrl("");
     }
-  };
+};
 
-  Blockly.JavaScript['send_video'] = function(block) {
+Blockly.JavaScript['send_video'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    // TODO: Assemble JavaScript into code variable.
     var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send video' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
-        block.setColour("#FF2222");
+        hasError = true;
     } else if (!isValidSay(block)) {
         code = code + "// ERROR: this 'send video' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
-        block.setColour("#FF2222");
-    } else {
-        block.setColour("#a5805b");
+        hasError = true;
     }
+
     if (isValidVideoUrl(value_url)) {
         code = code + 
         "say({attachment: 'video', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#a5805b");
     }
     else {
         code = code + 
-        "// ERROR: Video URL invalid. Must start with 'https://' or 'http://' and end with mp3/wav/aiff/aac/flac\n" + 
+        "// ERROR: Video URL invalid. Must start with 'https://' or 'http://' and end with mp4/avi/mov/flv/wmv\n" + 
         "say('Included video was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#FF2222");
+        hasError = true;
     }
+
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
     return code;
-  };
+};
 
-  Blockly.Blocks['send_audio'] = {
+Blockly.Blocks['send_video_new'] = {
     init: function() {
-      this.appendValueInput("URL")
-          .setCheck("String")
-          .appendField("send audio from link:");
-      this.appendStatementInput("ACTIONS")
-          .setCheck('action')
-          .appendField("then");
-      this.setPreviousStatement(true, 'action');
-      this.setColour(30);
-   this.setTooltip("Nemobot sends an audio file then does the nested blocks.");
-   this.setHelpUrl("");
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send video from the link");
+        this.appendStatementInput("ACTIONS")
+            .setCheck("action")
+            .appendField("then");
+        this.appendDummyInput()
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField("ignore errors?")
+            .appendField(new Blockly.FieldCheckbox("FALSE"), "IGNORE");
+        this.setPreviousStatement(true, null);
+        this.setColour(30);
+        this.setTooltip("Nemobot sends a video then does the nested blocks.");
+        this.setHelpUrl("");
     }
-  };
+};
 
-  Blockly.JavaScript['send_audio'] = function(block) {
+Blockly.JavaScript['send_video_new'] = function(block) {
+    var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
+    var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
+    var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
+    var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
+    if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
+        code = code + "// ERROR: this 'send video' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        hasError = true;
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send video' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
+        hasError = true;
+    }
+
+    if (checkbox_ignore || isValidVideoUrl(value_url)) {
+        code = code + 
+        "say({attachment: 'video', url:" + value_url + "}).then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+    }
+    else {
+        code = code + 
+        "// ERROR: Video URL invalid. Must start with 'https://' or 'http://' and end with mp4/avi/mov/flv/wmv\n" + 
+        "say('Included video was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+        hasError = true;
+    }
+
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
+    return code;
+};
+
+Blockly.Blocks['send_audio'] = {
+    init: function() {
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send audio from link:");
+        this.appendStatementInput("ACTIONS")
+            .setCheck('action')
+            .appendField("then");
+        this.setPreviousStatement(true, 'action');
+        this.setColour(30);
+        this.setTooltip("Nemobot sends an audio file then does the nested blocks.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['send_audio'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    // TODO: Assemble JavaScript into code variable.
     var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'send audio' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
-        block.setColour("#FF2222");
+        hasError = true;
     } else if (!isValidSay(block)) {
         code = code + "// ERROR: this 'send audio' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
-        block.setColour("#FF2222");
-    } else {
-        block.setColour("#a5805b");
+        hasError = true;
     }
+
     if (isValidAudioUrl(value_url)) {
         code = code + 
         "say({attachment: 'audio', url:" + value_url + "}).then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#a5805b");
     }
     else {
         code = code + 
@@ -226,10 +358,69 @@ Blockly.Blocks['send_image'] = {
         "say('Included audio was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
             statements_actions + 
         "});\n";
-        block.setColour("#FF2222");
+        hasError = true;
     }
+
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
     return code;
-  };
+};
+
+Blockly.Blocks['send_audio_new'] = {
+    init: function() {
+        this.appendValueInput("URL")
+            .setCheck("String")
+            .appendField("send audio from the link");
+        this.appendStatementInput("ACTIONS")
+            .setCheck("action")
+            .appendField("then");
+        this.appendDummyInput()
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField("ignore errors?")
+            .appendField(new Blockly.FieldCheckbox("FALSE"), "IGNORE");
+        this.setPreviousStatement(true, null);
+        this.setColour(30);
+        this.setTooltip("Nemobot sends an audio file then does the nested blocks.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['send_audio_new'] = function(block) {
+    var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
+    var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
+    var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
+    var code = "";
+    var hasError = false;
+
+    if (value_url === "") value_url = "''";
+
+    if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
+        code = code + "// ERROR: this 'send audio' block needs to be in a 'start', 'repeat', or function block - " + value_url + "\n";
+        hasError = true;
+    } else if (!isValidSay(block)) {
+        code = code + "// ERROR: this 'send audio' block needs to be outside an 'ask' or 'option' block - " + value_url + "\n";
+        hasError = true;
+    }
+
+    if (checkbox_ignore || isValidAudioUrl(value_url)) {
+        code = code + 
+        "say({attachment: 'audio', url:" + value_url + "}).then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+    }
+    else {
+        code = code + 
+        "// ERROR: Audio URL invalid. Must start with 'https://' or 'http://' and end with mp4/avi/mov/flv/wmv\n" + 
+        "say('Included audio was not found in the given link: " + value_url.substring(1, value_url.length-1) + "').then(() => {\n" + 
+            statements_actions + 
+        "});\n";
+        hasError = true;
+    }
+
+    (hasError) ? block.setColour("#FF2222") : block.setColour("#a5805b"); 
+
+    return code;
+};
 
 Blockly.Blocks['ask'] = {
     init: function() {
@@ -250,8 +441,10 @@ Blockly.Blocks['ask'] = {
 Blockly.JavaScript['ask'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    if (value_dialogue === "") value_dialogue = "''";
     var code = "";
+
+    if (value_dialogue === "") value_dialogue = "''";
+
     if (!['start', 'repeat', 'procedures_defnoreturn', 'procedures_defreturn'].includes(block.getRootBlock().type)) {
         code = code + "// ERROR: this 'ask' block needs to be in a 'start','repeat', or function block - " + value_dialogue + "\n";
         block.setColour("#FF2222");
@@ -261,11 +454,13 @@ Blockly.JavaScript['ask'] = function(block) {
     } else {
         block.setColour("#a5805b");
     }
+
     code = code + 
         "const curPayload = JSON.parse(summarizeVariables());\n" +
         "let options = [];\n" + 
         statements_actions.replaceAll("\n  ", "\n").substring(2) +
         "sendButton(" + value_dialogue + ", options);\n";
+    
     return code;
 };
 
@@ -292,9 +487,11 @@ Blockly.JavaScript['option'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var variable_payload_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('PAYLOAD_VAR'), Blockly.Variables.NAME_TYPE);
     var value_payload_val = Blockly.JavaScript.valueToCode(block, 'PAYLOAD_VAL', Blockly.JavaScript.ORDER_ATOMIC);
+    var code = "";
+
     if (value_title === "") value_title = "''";
     if (value_payload_val === "") value_payload_val = "''";
-    var code = "";
+    
     if (!isValidOption(block)) {
         code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
         block.setColour("#FF2222");
@@ -305,10 +502,12 @@ Blockly.JavaScript['option'] = function(block) {
         code = code + "// " + value_title + " option\n";
         block.setColour("#a5805b");
     }
+
     code = code +  
         "updateVariables(curPayload); // restores variables \n" + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
         "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+    
     return code;
 };
 
@@ -330,8 +529,10 @@ Blockly.Blocks['option_only'] = {
 
 Blockly.JavaScript['option_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
-    if (value_title === "") value_title = "''";
     var code = "";
+
+    if (value_title === "") value_title = "''";
+
     if (!isValidOption(block)) {
         code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
         block.setColour("#FF2222");
@@ -342,9 +543,11 @@ Blockly.JavaScript['option_only'] = function(block) {
         code = code + "// " + value_title + " option\n";
         block.setColour("#a5805b");
     }
+
     code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+    
     return code;
 };
 
@@ -377,9 +580,11 @@ Blockly.Blocks['option_do'] = {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     var variable_payload_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('PAYLOAD_VAR'), Blockly.Variables.NAME_TYPE);
     var value_payload_val = Blockly.JavaScript.valueToCode(block, 'PAYLOAD_VAL', Blockly.JavaScript.ORDER_ATOMIC);
+    var code = "";
+    
     if (value_title === "") value_title = "''";
     if (value_payload_val === "") value_payload_val = "''";
-    var code = "";
+    
     if (!isValidOption(block)) {
         code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
         block.setColour("#FF2222");
@@ -390,11 +595,13 @@ Blockly.Blocks['option_do'] = {
         code = code + "// " + value_title + " option\n";
         block.setColour("#a5805b");
     }
+
     code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+    
     return code;
   };
 
@@ -420,8 +627,10 @@ Blockly.Blocks['option_do_only'] = {
 Blockly.JavaScript['option_do_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
-    if (value_title === "") value_title = "''";
     var code = "";
+
+    if (value_title === "") value_title = "''";
+
     if (!isValidOption(block)) {
         code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
         block.setColour("#FF2222");
@@ -432,10 +641,12 @@ Blockly.JavaScript['option_do_only'] = function(block) {
         code = code + "// " + value_title + " option\n";
         block.setColour("#a5805b");
     }
+
     code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
         statements_actions + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n"
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+    
     return code;
 };
 
@@ -458,8 +669,10 @@ Blockly.Blocks['option_restart'] = {
 
 Blockly.JavaScript['option_restart'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
-    if (value_title === "") value_title = "''";
     var code = "";
+
+    if (value_title === "") value_title = "''";
+
     if (!isValidOption(block)) {
         code = code + "// ERROR: the following option must be in an 'ask' block - " + value_title + "\n";
         block.setColour("#FF2222");
@@ -470,9 +683,11 @@ Blockly.JavaScript['option_restart'] = function(block) {
         code = code + "// " + value_title + " option\n";
         block.setColour("#a5805b");
     }
+
     code = code + 
         "updateVariables(curPayload); // restores variables \n" + 
-        "options.push({title: " + value_title +", payload: 'restart'});\n"
+        "options.push({title: " + value_title +", payload: 'restart'});\n";
+    
     return code;
 };
 
@@ -575,13 +790,189 @@ Blockly.Blocks['random_number'] = {
 Blockly.JavaScript['random_number'] = function(block) {
     var value_start = Blockly.JavaScript.valueToCode(block, 'START', Blockly.JavaScript.ORDER_ATOMIC) | "0";
     var value_end = Blockly.JavaScript.valueToCode(block, 'END', Blockly.JavaScript.ORDER_ATOMIC) | "0";
-    // TODO: Assemble JavaScript into code variable.
     var code = 'Math.floor(Math.random() * Math.abs(' + value_end + ' - ' + value_start + ' + 1) + ' + value_start + ')';
-    // TODO: Change ORDER_NONE to the correct strength.
+    return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.Blocks['obj_create'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("new object");
+        this.setOutput(true, "Object");
+        this.setColour(65);
+        this.setTooltip("Create an empty object.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['obj_create'] = function(block) {
+    var code = '{}';
+    return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.Blocks['obj_get'] = {
+    init: function() {
+        this.appendValueInput("KEY")
+            .setCheck("String")
+            .appendField("get");
+        this.appendValueInput("OBJ")
+            .setCheck("Object")
+            .appendField("from the");
+        this.appendDummyInput()
+            .appendField("object");
+        this.setInputsInline(true);
+        this.setOutput(true, null);
+        this.setColour(65);
+        this.setTooltip("Get a value from the input object.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['obj_get'] = function(block) {
+    var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
+    var code = "(typeof " + value_obj + " === 'object' && " + value_key + " in " + value_obj + ") ? " + value_obj + "[" + value_key + "] : null";
+    return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.Blocks['obj_set'] = {
+    init: function() {
+        this.appendValueInput("KEY")
+            .setCheck("String")
+            .appendField("set");
+        this.appendValueInput("OBJ")
+            .setCheck("Object")
+            .appendField("from the");
+        this.appendValueInput("INPUT")
+            .setCheck(null)
+            .appendField("object to");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(65);
+        this.setTooltip("Set a value in the input object.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['obj_set'] = function(block) {
+    var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_input = Blockly.JavaScript.valueToCode(block, 'INPUT', Blockly.JavaScript.ORDER_ATOMIC);
+    // TODO: Assemble JavaScript into code variable.
+    var code = "if (typeof " + value_obj + " !== 'object') " + value_obj + " = {};\n" + 
+    value_obj + "[" + value_key + "] = " + value_input + ";\n";
+    return code;
+};
+
+Blockly.Blocks['axios_call'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("axios call using ");
+        this.appendValueInput("PARAMS")
+            .setCheck("Object")
+            .appendField("parameters from");
+        this.appendStatementInput("SCS_ACTIONS")
+            .setCheck(null)
+            .appendField("on success");
+        this.appendStatementInput("ERR_ACTIONS")
+            .setCheck(null)
+            .appendField("on error");
+        this.setInputsInline(false);
+        this.setPreviousStatement(true, null);
+        this.setColour(65);
+        this.setTooltip("Make an axios call with parameters from the input object. ");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['axios_call'] = function(block) {
+    var value_params = Blockly.JavaScript.valueToCode(block, 'PARAMS', Blockly.JavaScript.ORDER_ATOMIC);
+    var statements_scs_actions = Blockly.JavaScript.statementToCode(block, 'SCS_ACTIONS');
+    var statements_err_actions = Blockly.JavaScript.statementToCode(block, 'ERR_ACTIONS');
+    
+    if (value_params === "") {
+        block.setColour("#FF2222");
+        return "// ERROR: axios call is missing parameters\n";
+    } else {
+        block.setColour("#9FA55B");
+    }
+
+    var code = "if ('method' in " + value_params + " && 'url' in " + value_params + ') axios(' + value_params + ')\n' + 
+    '.then((axios_res) => {\n' + statements_scs_actions + '})\n' + 
+    '.catch((axios_res) => {\n' + statements_err_actions + '});\n';
+    return code;
+};
+
+Blockly.Blocks['axios_call_simple'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("axios call");
+        this.appendValueInput("METHOD")
+            .setCheck("String")
+            .appendField("method");
+        this.appendValueInput("url")
+            .setCheck("String")
+            .appendField("url");
+        this.appendStatementInput("SCS_ACTIONS")
+            .setCheck(null)
+            .appendField("on success");
+        this.appendStatementInput("ERR_ACTIONS")
+            .setCheck(null)
+            .appendField("on error");
+        this.setInputsInline(false);
+        this.setPreviousStatement(true, null);
+        this.setColour(65);
+        this.setTooltip("Make an axios call with parameters from the input object. ");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['axios_call_simple'] = function(block) {
+    var value_method = Blockly.JavaScript.valueToCode(block, 'METHOD', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_url = Blockly.JavaScript.valueToCode(block, 'url', Blockly.JavaScript.ORDER_ATOMIC);
+    var statements_scs_actions = Blockly.JavaScript.statementToCode(block, 'SCS_ACTIONS');
+    var statements_err_actions = Blockly.JavaScript.statementToCode(block, 'ERR_ACTIONS');
+    
+    if (value_method === "" || value_url === "") {
+        block.setColour("#FF2222");
+        return "// ERROR: axios call is missing parameters\n";
+    } else {
+        block.setColour("#9FA55B");
+    }
+
+    var code = 'axios({\n' + 
+    '  method: ' + value_method + ',\n' + 
+    '  url: ' + value_url + 
+    '\n})\n' + 
+    '.then((axios_res) => {\n' + statements_scs_actions + '})\n' + 
+    '.catch((axios_res) => {\n' + statements_err_actions + '});\n';
+    return code;
+};
+
+Blockly.Blocks['axios_result'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("axios result");
+        this.setInputsInline(false);
+        this.setOutput(true, "Object");
+        this.setColour(65);
+        this.setTooltip("Object result on a successful axios call.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['axios_result'] = function(block) {
+    var comment = '';
+    if (isValidAxiosRes(block)) {
+        block.setColour("#9FA55B");
+    } else {
+        block.setColour("#FF2222");
+        comment = ' /* ERROR: axios result block needs to be in an axios call block */';
+    }
+    var code = 'axios_res' + comment;
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
 // TODO: Error check for infinite loops
-// TODO: API/Axios
-// TODO: Documentation
-// TODO: Replace random integer blocks in db with random number blocks
+// TODO: Replace random integer blocks in db with random number blocks as well as the send blocks

@@ -1,5 +1,16 @@
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
+import start from "./docImages/start.png"
+import repeat from "./docImages/repeat.png"
+import say from "./docImages/say.png"
+import send_image from "./docImages/send_image.png"
+import send_video from "./docImages/send_video.png"
+import send_audio from "./docImages/send_audio.png"
+import ask from "./docImages/ask.png"
+import option_only from "./docImages/option_only.png"
+import option_variable from "./docImages/option_variable.png"
+import option_actions from "./docImages/option_actions.png"
+import option_restart from "./docImages/option_restart.png"
 
 export default function Documentation(props) {
     const [showNav, setShowNav] = useState(false);
@@ -38,6 +49,7 @@ export default function Documentation(props) {
             <div class="card mb-5 mt-4">
                 <div class="card-body">
                     <h5 class="card-title">Start</h5>
+                    <img src={start} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the two blocks that appear on every NemoBlocks program.</p>
                     <p class="card-text">
                         When NemoBot runs the program, it will run the blocks inside of the Start block from top to bottom. 
@@ -54,6 +66,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Repeat</h5>
+                    <img src={repeat} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the two blocks that appear on every NemoBlocks program.</p>
                     <p class="card-text">
                         As mentioned in the Start block description, there is a block that allows you to ask users a question and give some options.
@@ -65,6 +78,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Say</h5>
+                    <img src={say} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the five blocks that tells Nemobot to send something.</p>
                     <p class="card-text">
                         When Nemobot runs this block, it will send the input text to the user. 
@@ -80,6 +94,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Send Image</h5>
+                    <img src={send_image} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the five blocks that tells Nemobot to send something.</p>
                     <p class="card-text">
                         When Nemobot runs this block, it will send the image from the given link to the user.
@@ -98,6 +113,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Send Video</h5>
+                    <img src={send_video} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the five blocks that tells Nemobot to send something.</p>
                     <p class="card-text">
                         When Nemobot runs this block, it will send the video from the given link to the user.
@@ -116,6 +132,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Send Audio</h5>
+                    <img src={send_audio} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the five blocks that tells Nemobot to send something.</p>
                     <p class="card-text">
                         When Nemobot runs this block, it will send the audio from the given link to the user.
@@ -134,6 +151,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Ask</h5>
+                    <img src={ask} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the five blocks that tells Nemobot to send something.</p>
                     <p class="card-text">
                         When Nemobot runs this block, it will send the input text to the user. 
@@ -153,6 +171,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Option only</h5>
+                    <img src={option_only} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the four Option blocks.</p>
                     <p class="card-text">
                         This Option block will add an option with the input text or string.
@@ -168,6 +187,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Option with Variable</h5>
+                    <img src={option_variable} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the four Option blocks.</p>
                     <p class="card-text">
                         This Option block will add an option with the input text or string.
@@ -183,6 +203,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Option with Actions</h5>
+                    <img src={option_actions} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the four Option blocks.</p>
                     <p class="card-text">
                         This Option block will add an option with the input text or string.
@@ -198,6 +219,7 @@ export default function Documentation(props) {
             <div class="card mb-5">
                 <div class="card-body">
                     <h5 class="card-title">Option with Restart</h5>
+                    <img src={option_restart} alt="Start block" height="150" width="600"></img>
                     <p class="card-text">This is one of the four Option blocks.</p>
                     <p class="card-text">
                         This Option block will add an option with the input text or string.
