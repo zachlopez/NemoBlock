@@ -99,7 +99,7 @@ export default function Workspace(props) {
             varList.reduce((sum, cur)  => {
                 let newSum = sum;
                 let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
-                let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say", "sayIn", "sendButtonIn", "payload", "axios_res"];
+                let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say", "sayIn", "sendButtonIn", "payload", "axios_res", "axios", "modules"];
                 if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
                 return newSum + "  " + varName + " = payload." + varName + " | '';\n";
             }, "") + 
