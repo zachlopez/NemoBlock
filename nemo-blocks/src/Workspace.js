@@ -91,7 +91,10 @@ export default function Workspace(props) {
         "\n\n// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return JSON.stringify({ \n" +
-                varList.reduce((sum, cur)  => sum + "    " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + ": " + Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE) + " | '',\n", "") + 
+                varList.reduce((sum, cur)  => {
+                    var varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
+                    return sum + "    " + varName + ": (" + varName + ") ? " + varName + " : '',\n";
+                }, "") + 
             "  }); \n" + 
         "}; \n\n\n" +   
         "// updates all used variables based on the payload dictionary object \n" + 
@@ -101,7 +104,7 @@ export default function Workspace(props) {
                 let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
                 let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say", "sayIn", "sendButtonIn", "payload", "axios_res", "axios", "modules"];
                 if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
-                return newSum + "  " + varName + " = payload." + varName + " | '';\n";
+                return newSum + "  " + varName + " = (payload." + varName + ") ? payload." + varName + " : ''; \n";
             }, "") + 
         "}; \n\n\n" +
         codeLines.slice(codeInit).join("\n") + "\n\nmodule.exports = {\n" + 
