@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import start from "./docImages/start.png"
 import repeat from "./docImages/repeat.png"
-import say from "./docImages/say.png"
+import say from "./docImages/say_block.png"
 import send_image from "./docImages/send_image.png"
 import send_video from "./docImages/send_video.png"
 import send_audio from "./docImages/send_audio.png"
-import ask from "./docImages/ask.png"
+import ask from "./docImages/ask_block.png"
 import option_only from "./docImages/option_only.png"
 import option_variable from "./docImages/option_variable.png"
 import option_actions from "./docImages/option_actions.png"
