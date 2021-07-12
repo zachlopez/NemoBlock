@@ -651,7 +651,7 @@ Blockly.Blocks['repeat'] = {
 Blockly.JavaScript['repeat'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     return "// repeated every time a button is pressed\n" + 
-    "const state = (payload, sayIn, sendButtonIn) => { \n" + 
+    "const repeat = (payload, sayIn, sendButtonIn) => { \n" + 
         "  say = sayIn;\n" +
         "  sendButton = sendButtonIn;\n" +
         "  updateVariables(JSON.parse(payload)); \n" + 

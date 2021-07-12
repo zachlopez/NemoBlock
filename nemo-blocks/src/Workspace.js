@@ -79,6 +79,7 @@ export default function Workspace(props) {
         let codeStart = "";
         let codeInit = 0;
         let reqAxios = "";
+        let debugCode = "";
 
         if (codeLines[0].indexOf("var") === 0) {
             codeStart = codeLines[0] + "\n" + codeLines[1] + "\n";
@@ -86,6 +87,30 @@ export default function Workspace(props) {
         }
 
         if (code.includes("axios")) reqAxios = "const axios = require('axios');\n";
+
+        if (addDebug) {
+            debugCode = "" +
+            "// wraps the start function in a try-catch statement for debug mode" + 
+            "const debug_start = (sayIn, sendButtonIn) => {\n" +
+            "  try {\n" +
+            "    start(sayIn, sendButtonIn);\n" +
+            "  }\n" +
+            "  catch (err) {\n" +
+            "    if (typeof err === 'string') sayIn('An error occured: ' + err);\n" +
+            "    else sayIn('*An error occured: ' + err.message + '*');" + 
+            "  }\n" +
+            "};\n\n" +
+            "// wraps the repeat function in a try-catch statement for debug mode" + 
+            "const debug_repeat = (payload, sayIn, sendButtonIn) => {\n" +
+            "  try {\n" +
+            "    repeat(payload, sayIn, sendButtonIn);\n" +
+            "  }\n" +
+            "  catch (err) {\n" +
+            "    if (typeof err === 'string') sayIn('An error occured: ' + err);\n" +
+            "    else sayIn('*An error occured: ' + err.message + '*');" + 
+            "  }\n" +
+            "};\n";
+        }
 
         code = "'use strict';\n" + 
         reqAxios + 
@@ -110,12 +135,14 @@ export default function Workspace(props) {
                 return newSum + "  " + varName + " = (payload." + varName + ") ? payload." + varName + " : ''; \n";
             }, "") + 
         "}; \n\n\n" +
-        codeLines.slice(codeInit).join("\n") + "\n\nmodule.exports = {\n" + 
+        codeLines.slice(codeInit).join("\n") + "\n" +  
+        debugCode + 
+        "\n\nmodule.exports = {\n" + 
         "  filename: '" + filename.replaceAll("'", "\\'") + "'," + ((filename.replaceAll("'", "\\'"))==="" ? " /* ERROR: missing filename */": "" ) + "\n" + 
         "  title: '" + title.replaceAll("'", "\\'") + "'," + ((filename.replaceAll("'", "\\'"))==="" ? " /* ERROR: missing title */": "" ) + "\n" +
         "  introduction: [" + ((intro === "") ? "" : ("'" + intro.replaceAll("'", "\\'").replaceAll('\n', "','")) + "'") + "],\n" + 
-        "  start: start,\n" + 
-        "  state: state,\n" + 
+        "  start: " + ((addDebug) ? "debug_start" : "start") + ",\n" + 
+        "  state: " + ((addDebug) ? "debug_repeat" : "repeat") + ",\n" + 
         "};\n"
         setJavascriptCode(code);
         try {
