@@ -90,24 +90,24 @@ export default function Workspace(props) {
 
         if (addDebug) {
             debugCode = "" +
-            "// wraps the start function in a try-catch statement for debug mode" + 
+            "// wraps the start function in a try-catch statement for debug mode\n" + 
             "const debug_start = (sayIn, sendButtonIn) => {\n" +
             "  try {\n" +
             "    start(sayIn, sendButtonIn);\n" +
             "  }\n" +
             "  catch (err) {\n" +
             "    if (typeof err === 'string') sayIn('An error occured: ' + err);\n" +
-            "    else sayIn('*An error occured: ' + err.message + '*');" + 
+            "    else sayIn('*An error occured: ' + err.message + '*');\n" + 
             "  }\n" +
             "};\n\n" +
-            "// wraps the repeat function in a try-catch statement for debug mode" + 
+            "// wraps the repeat function in a try-catch statement for debug mode\n" + 
             "const debug_repeat = (payload, sayIn, sendButtonIn) => {\n" +
             "  try {\n" +
             "    repeat(payload, sayIn, sendButtonIn);\n" +
             "  }\n" +
             "  catch (err) {\n" +
             "    if (typeof err === 'string') sayIn('An error occured: ' + err);\n" +
-            "    else sayIn('*An error occured: ' + err.message + '*');" + 
+            "    else sayIn('*An error occured: ' + err.message + '*');\n" + 
             "  }\n" +
             "};\n";
         }
