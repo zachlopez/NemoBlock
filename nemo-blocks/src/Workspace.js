@@ -20,6 +20,7 @@ export default function Workspace(props) {
     const [showMore, setShowMore] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
+    const [addDebug, setAddDebug] = useState(false);
     const [stalledProcess, setStalledProcess] = useState("");
     const [lastSaved, setLastSaved] = useState(JSON.stringify({user: props.curUser, id: "-1", filename: "", title: "", intro: "", program: tmpXml}));
     const [initialXml, setInitialXml] = useState("");
@@ -335,6 +336,11 @@ export default function Workspace(props) {
         }
     }
 
+    let handleDebug = async e => {
+        e.preventDefault();
+        setAddDebug(!addDebug);
+    }
+
     let handleDelete = async e => {
         e.preventDefault();
         setShowDelete(true);
@@ -474,6 +480,9 @@ export default function Workspace(props) {
                     </div>
                     <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
                         <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class="btn btn-outline-primary" onClick={handleSaveAs}>Save as Copy</button>
+                    </div>
+                    <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
+                        <button style={{fontSize: "1.9vh", width: "94%", height: "100%"}} class={"btn btn-outline-primary" + ((addDebug) ? " active" : "")} onClick={handleDebug}>{((addDebug) ? "Deactivate " : "Activate ")}Debug Mode</button>
                     </div>
                     {(curId !== "-1") ? 
                         <div style={{height: "7.3%"}} class="btn-toolbar d-flex justify-content-around pb-3">
