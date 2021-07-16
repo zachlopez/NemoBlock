@@ -286,7 +286,7 @@ const toolbox = {
           },
           {
             kind: "block",
-            type: "obj_set",
+            type: "obj_set_new",
           },
           {
             kind: "block",

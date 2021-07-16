@@ -696,10 +696,10 @@ Blockly.JavaScript['text_from'] = function(block) {
 Blockly.Blocks['random_number'] = {
     init: function() {
         this.appendValueInput("START")
-            .setCheck(null)
+            .setCheck("Number")
             .appendField("random number from");
         this.appendValueInput("END")
-            .setCheck(null)
+            .setCheck("Number")
             .appendField("to");
         this.setInputsInline(true);
         this.setOutput(true, null);
@@ -751,6 +751,16 @@ Blockly.Blocks['obj_get'] = {
 Blockly.JavaScript['obj_get'] = function(block) {
     var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
     var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
+
+    if (value_key === "") value_key = "''";
+
+    if (value_obj === "") {
+        block.setColour("#FF2222");
+        return "// ERROR: missing object input for the key '" + value_key + "'\n";
+    } else {
+        block.setColour("#9FA55B");
+    }
+
     var code = "(typeof " + value_obj + " === 'object' && " + value_key + " in " + value_obj + ") ? " + value_obj + "[" + value_key + "] : null";
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
@@ -779,7 +789,50 @@ Blockly.JavaScript['obj_set'] = function(block) {
     var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
     var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
     var value_input = Blockly.JavaScript.valueToCode(block, 'INPUT', Blockly.JavaScript.ORDER_ATOMIC);
-    // TODO: Assemble JavaScript into code variable.
+    
+    var code = "if (typeof " + value_obj + " !== 'object') " + value_obj + " = {};\n" + 
+    value_obj + "[" + value_key + "] = " + value_input + ";\n";
+    return code;
+};
+
+Blockly.Blocks['obj_set_new'] = {
+    init: function() {
+        this.appendValueInput("KEY")
+            .setCheck("String")
+            .appendField("set");
+        this.appendValueInput("OBJ")
+            .setCheck("Object")
+            .appendField("in");
+        this.appendValueInput("INPUT")
+            .setCheck(null)
+            .appendField("to");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(65);
+        this.setTooltip("Set a value in the input object.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['obj_set_new'] = function(block) {
+    var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
+    var value_input = Blockly.JavaScript.valueToCode(block, 'INPUT', Blockly.JavaScript.ORDER_ATOMIC);
+
+    if (value_key === "") value_key = "''";
+    if (value_input === "") value_input = "''";
+
+    if (value_obj === "") {
+        block.setColour("#FF2222");
+        return "// ERROR: missing object input for the key '" + value_key + "'\n";
+    } else if (value_obj === "({})") {
+        block.setColour("#FF2222");
+        return "// ERROR: input object cannot be a new object, store it in a vairable first'\n";
+    } else {
+        block.setColour("#9FA55B");
+    }
+
     var code = "if (typeof " + value_obj + " !== 'object') " + value_obj + " = {};\n" + 
     value_obj + "[" + value_key + "] = " + value_input + ";\n";
     return code;
@@ -894,5 +947,4 @@ Blockly.JavaScript['axios_result'] = function(block) {
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-// TODO: Add debug mode
-
+// TODO: do presentation
