@@ -46,6 +46,7 @@ export default function Documentation(props) {
                     </div>
                 </div>
             </div>
+            Find the documentation on advanced blocks <a href="https://drive.google.com/file/d/1Hs_2UtuhXqxjzYoXdmcJBQeEkigR1nBn/view?usp=sharing">here</a>.
             <div class="card mb-5 mt-4">
                 <div class="card-body">
                     <h5 class="card-title">Start</h5>

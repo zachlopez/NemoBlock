@@ -290,11 +290,15 @@ const toolbox = {
           },
           {
             kind: "block",
-            type: "axios_call",
+            type: "obj_text_from",
           },
           {
             kind: "block",
             type: "axios_call_simple",
+          },
+          {
+            kind: "block",
+            type: "axios_call",
           },
           {
             kind: "block",

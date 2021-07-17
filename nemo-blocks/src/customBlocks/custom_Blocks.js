@@ -756,7 +756,7 @@ Blockly.JavaScript['obj_get'] = function(block) {
 
     if (value_obj === "") {
         block.setColour("#FF2222");
-        return "// ERROR: missing object input for the key '" + value_key + "'\n";
+        return ["/* ERROR: missing object input for the key " + value_key + "*/ null", Blockly.JavaScript.ORDER_NONE];
     } else {
         block.setColour("#9FA55B");
     }
@@ -836,6 +836,24 @@ Blockly.JavaScript['obj_set_new'] = function(block) {
     var code = "if (typeof " + value_obj + " !== 'object') " + value_obj + " = {};\n" + 
     value_obj + "[" + value_key + "] = " + value_input + ";\n";
     return code;
+};
+
+Blockly.Blocks['obj_text_from'] = {
+    init: function() {
+        this.appendValueInput("input")
+            .setCheck("Object")
+            .appendField("text from object");
+        this.setOutput(true, "String");
+        this.setColour(65);
+        this.setTooltip("Returns a string or text version of the object.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['obj_text_from'] = function(block) {
+    var value_input = Blockly.JavaScript.valueToCode(block, 'input', Blockly.JavaScript.ORDER_ATOMIC);
+    var code = 'JSON.stringify(' + value_input + ')';
+    return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
 Blockly.Blocks['axios_call'] = {
