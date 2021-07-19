@@ -1,3 +1,10 @@
+/********************************************************************************************/
+/* Toolbox.js                                                                               */
+/*__________________________________________________________________________________________*/
+/* Exports a dictionary that determines the order of blocks in the Blockly workspace.       */
+/* Type of block must exist in the general block types or in custom_Blocks.js.              */
+/********************************************************************************************/
+
 const toolbox = {
     kind: "categoryToolbox",
     contents: [

@@ -1,3 +1,12 @@
+/********************************************************************************************/
+/* Programs.js                                                                              */
+/*__________________________________________________________________________________________*/
+/* Component that displays the list of existing programs from a user.                       */
+/* Uses the setPage, setCurUser, setNewId global state functions.                           */
+/* It also uses the curUser global state variables. All these must be passed as props.      */
+/* The shown prop must also be passed to see if it is currently being displayed or not.     */
+/********************************************************************************************/
+
 import React, { useEffect, useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 

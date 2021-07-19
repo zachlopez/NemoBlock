@@ -1,6 +1,14 @@
+/********************************************************************************************/
+/* custom_Blocks.js                                                                         */
+/*__________________________________________________________________________________________*/
+/* Contains definition and translation of each custom block.                                */
+/* Requires the Blockly library.                                                            */
+/********************************************************************************************/
+
 import Blockly from 'blockly';
 import 'blockly/python';
 
+// Checks if the input string is a valid url
 function isValidHttpUrl(urlString) {
     let url;
 
@@ -13,21 +21,26 @@ function isValidHttpUrl(urlString) {
     return url.protocol === "http:" || url.protocol === "https:";
 }
 
+// Checks if the input string is a url and contains an image extension
 function isValidImageUrl(urlString) {
     var url = urlString.substring(1, urlString.length-1);
     return(isValidHttpUrl(url) && url.match(/\.(jpg|jpeg|png|gif|svg)($|\?)/) != null);
 }
 
+// Checks if the input string is a url and contains a video extension
 function isValidVideoUrl(urlString) {
     var url = urlString.substring(1, urlString.length-1);
     return(isValidHttpUrl(url) && url.match(/\.(mp4|avi|mov|flv|wmv)($|\?)/) != null);
 }
 
+// Checks if the input string is a url and contains an audio extension
 function isValidAudioUrl(urlString) {
     var url = urlString.substring(1, urlString.length-1);
     return(isValidHttpUrl(url) && url.match(/\.(mp3|wav|aiff|aac|flac)($|\?)/) != null);
 }
 
+// Checks if the block is a child of some Option block, returns true if it is
+// Valid option blocks must not be in another option block
 function isOptionInOption(block) {
     var curBlock = block;
     while (curBlock.getSurroundParent() !== null && !['option_do', 'option_do_only'].includes(curBlock.getSurroundParent().type)) {
@@ -36,6 +49,8 @@ function isOptionInOption(block) {
     return curBlock.getSurroundParent() !== null;
 }
 
+// Checks if the block is a child of some Ask block, returns true if it is
+// Valid option blocks must be in an ask block
 function isValidOption(block) {
     var curBlock = block;
     while (curBlock.getSurroundParent() !== null && !['ask'].includes(curBlock.getSurroundParent().type)) {
@@ -44,6 +59,8 @@ function isValidOption(block) {
     return curBlock.getSurroundParent() !== null;
 }
 
+// Checks if the block is a child of some an Ask or Option block, returns true if it is not
+// Valid say block must be NOT be in an Ask or Option block 
 function isValidSay(block) {
     var curBlock = block;
     while (curBlock.getSurroundParent() !== null && !['ask', 'option_do', 'option_do_only'].includes(curBlock.getSurroundParent().type)) {
@@ -52,6 +69,8 @@ function isValidSay(block) {
     return curBlock.getSurroundParent() === null;
 }
 
+// Checks if the block is in an Axios call block, returns true if it is
+// Valid axios_result block must be in an Axios call block
 function isValidAxiosRes(block) {
     var curBlock = block;
     while (curBlock.getSurroundParent() !== null && !['axios_call', 'axios_call_simple'].includes(curBlock.getSurroundParent().type)) {
@@ -60,6 +79,7 @@ function isValidAxiosRes(block) {
     return curBlock.getSurroundParent() !== null;
 }
 
+// Say block definition
 Blockly.Blocks['say'] = {
     init: function() {
         this.appendValueInput("DIALOGUE")
@@ -76,6 +96,7 @@ Blockly.Blocks['say'] = {
     }
 };
 
+// Say block translation
 Blockly.JavaScript['say'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -96,6 +117,7 @@ Blockly.JavaScript['say'] = function(block) {
     }
 };
 
+// Send image definition
 Blockly.Blocks['send_image'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -111,6 +133,7 @@ Blockly.Blocks['send_image'] = {
     }
 };
 
+// Send image translation
 Blockly.JavaScript['send_image'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -140,6 +163,7 @@ Blockly.JavaScript['send_image'] = function(block) {
     }
 };
 
+// Send image definition (new, but old is kept since others might be using it)
 Blockly.Blocks['send_image_new'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -159,6 +183,7 @@ Blockly.Blocks['send_image_new'] = {
     }
 };
 
+// Send image translation (new, but old is kept since others might be using it)
 Blockly.JavaScript['send_image_new'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
@@ -190,6 +215,7 @@ Blockly.JavaScript['send_image_new'] = function(block) {
     }
 };
 
+// Send video definition
 Blockly.Blocks['send_video'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -205,6 +231,7 @@ Blockly.Blocks['send_video'] = {
     }
 };
 
+// Send video translation
 Blockly.JavaScript['send_video'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -234,6 +261,7 @@ Blockly.JavaScript['send_video'] = function(block) {
     }
 };
 
+// Send video definition (new, but old is kept since others might be using it)
 Blockly.Blocks['send_video_new'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -253,6 +281,7 @@ Blockly.Blocks['send_video_new'] = {
     }
 };
 
+// Send video translation (new, but old is kept since others might be using it)
 Blockly.JavaScript['send_video_new'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
@@ -283,6 +312,7 @@ Blockly.JavaScript['send_video_new'] = function(block) {
     }
 };
 
+// Send audio definition
 Blockly.Blocks['send_audio'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -298,6 +328,7 @@ Blockly.Blocks['send_audio'] = {
     }
 };
 
+// Send audio translation
 Blockly.JavaScript['send_audio'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -327,6 +358,7 @@ Blockly.JavaScript['send_audio'] = function(block) {
     }
 };
 
+// Send audio definition (new, but old is kept since others might be using it)
 Blockly.Blocks['send_audio_new'] = {
     init: function() {
         this.appendValueInput("URL")
@@ -346,6 +378,7 @@ Blockly.Blocks['send_audio_new'] = {
     }
 };
 
+// Send audio translation (new, but old is kept since others might be using it)
 Blockly.JavaScript['send_audio_new'] = function(block) {
     var value_url = Blockly.JavaScript.valueToCode(block, 'URL', Blockly.JavaScript.ORDER_ATOMIC);
     var checkbox_ignore = (block.getFieldValue('IGNORE') === 'TRUE');
@@ -376,6 +409,7 @@ Blockly.JavaScript['send_audio_new'] = function(block) {
     } 
 };
 
+// Ask block definition
 Blockly.Blocks['ask'] = {
     init: function() {
         this.appendValueInput("DIALOGUE")
@@ -392,6 +426,7 @@ Blockly.Blocks['ask'] = {
     }
 };
 
+// Ask block translation
 Blockly.JavaScript['ask'] = function(block) {
     var value_dialogue = Blockly.JavaScript.valueToCode(block, 'DIALOGUE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -413,6 +448,7 @@ Blockly.JavaScript['ask'] = function(block) {
     }
 };
 
+// Option with Variable block definition
 Blockly.Blocks['option'] = {
     init: function() {
         this.appendValueInput("TITLE")
@@ -432,6 +468,7 @@ Blockly.Blocks['option'] = {
     }
 };
 
+// Option with Variable block translation
 Blockly.JavaScript['option'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var variable_payload_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('PAYLOAD_VAR'), Blockly.Variables.NAME_TYPE);
@@ -455,6 +492,7 @@ Blockly.JavaScript['option'] = function(block) {
     }
 };
 
+// Option only block definition
 Blockly.Blocks['option_only'] = {
     init: function() {
         this.appendValueInput("TITLE")
@@ -471,6 +509,7 @@ Blockly.Blocks['option_only'] = {
     }
 };
 
+// Option only block translation
 Blockly.JavaScript['option_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
 
@@ -490,6 +529,7 @@ Blockly.JavaScript['option_only'] = function(block) {
     }
 };
 
+// Option with variable and action block definition
 Blockly.Blocks['option_do'] = {
     init: function() {
         this.appendValueInput("TITLE")
@@ -514,7 +554,8 @@ Blockly.Blocks['option_do'] = {
     }
   };
 
-  Blockly.JavaScript['option_do'] = function(block) {
+// Option with variable and action block translation
+Blockly.JavaScript['option_do'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     var variable_payload_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('PAYLOAD_VAR'), Blockly.Variables.NAME_TYPE);
@@ -537,8 +578,9 @@ Blockly.Blocks['option_do'] = {
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
         "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
     }
-  };
+};
 
+// Option with action block definition
 Blockly.Blocks['option_do_only'] = {
     init: function() {
         this.appendValueInput("TITLE")
@@ -558,6 +600,7 @@ Blockly.Blocks['option_do_only'] = {
     }
 };
 
+// Option with action block translation
 Blockly.JavaScript['option_do_only'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
@@ -579,6 +622,7 @@ Blockly.JavaScript['option_do_only'] = function(block) {
     }
 };
 
+// Option with restart block definition
 Blockly.Blocks['option_restart'] = {
     init: function() {
         this.appendDummyInput()
@@ -596,6 +640,7 @@ Blockly.Blocks['option_restart'] = {
     }
 };
 
+// Option with restart block translation
 Blockly.JavaScript['option_restart'] = function(block) {
     var value_title = Blockly.JavaScript.valueToCode(block, 'TITLE', Blockly.JavaScript.ORDER_ATOMIC);
 
@@ -615,6 +660,7 @@ Blockly.JavaScript['option_restart'] = function(block) {
     }
 };
 
+// Start block definition
 Blockly.Blocks['start'] = {
     init: function() {
         this.appendStatementInput("ACTIONS")
@@ -626,6 +672,7 @@ Blockly.Blocks['start'] = {
     }
 };
 
+// Start block translation
 Blockly.JavaScript['start'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     return "" +
@@ -637,6 +684,7 @@ Blockly.JavaScript['start'] = function(block) {
         "}; \n\n\n";
 };
 
+// Repeat block definition
 Blockly.Blocks['repeat'] = {
     init: function() {
         this.appendStatementInput("ACTIONS")
@@ -648,6 +696,7 @@ Blockly.Blocks['repeat'] = {
     }
 };
 
+// Repeat block translation
 Blockly.JavaScript['repeat'] = function(block) {
     var statements_actions = Blockly.JavaScript.statementToCode(block, 'ACTIONS');
     return "// repeated every time a button is pressed\n" + 
@@ -659,6 +708,7 @@ Blockly.JavaScript['repeat'] = function(block) {
     "}; \n\n\n";
 };
 
+// New line block definition
 Blockly.Blocks['new_line'] = {
     init: function() {
         this.appendDummyInput()
@@ -670,11 +720,12 @@ Blockly.Blocks['new_line'] = {
     }
 };
 
+// New line block translation
 Blockly.JavaScript['new_line'] = function(block) {
     var code = "'\\n'";
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
-
+// Text from block definition
 Blockly.Blocks['text_from'] = {
     init: function() {
         this.appendValueInput("input")
@@ -687,12 +738,14 @@ Blockly.Blocks['text_from'] = {
     }
 };
 
+// Text from block translation
 Blockly.JavaScript['text_from'] = function(block) {
     var value_input = Blockly.JavaScript.valueToCode(block, 'input', Blockly.JavaScript.ORDER_ATOMIC);
     var code = 'String(' + value_input + ')';
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
+// Random number block definition
 Blockly.Blocks['random_number'] = {
     init: function() {
         this.appendValueInput("START")
@@ -709,6 +762,7 @@ Blockly.Blocks['random_number'] = {
     }
 };
 
+// Random number block translation
 Blockly.JavaScript['random_number'] = function(block) {
     var value_start = Blockly.JavaScript.valueToCode(block, 'START', Blockly.JavaScript.ORDER_ATOMIC) | "0";
     var value_end = Blockly.JavaScript.valueToCode(block, 'END', Blockly.JavaScript.ORDER_ATOMIC) | "0";
@@ -716,6 +770,7 @@ Blockly.JavaScript['random_number'] = function(block) {
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
+// New object block definition
 Blockly.Blocks['obj_create'] = {
     init: function() {
         this.appendDummyInput()
@@ -727,11 +782,13 @@ Blockly.Blocks['obj_create'] = {
     }
 };
 
+// New object block translation
 Blockly.JavaScript['obj_create'] = function(block) {
     var code = '{}';
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
+// Get object block definition
 Blockly.Blocks['obj_get'] = {
     init: function() {
         this.appendValueInput("KEY")
@@ -748,6 +805,7 @@ Blockly.Blocks['obj_get'] = {
     }
 };
 
+// Get object block translation
 Blockly.JavaScript['obj_get'] = function(block) {
     var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
     var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
@@ -765,6 +823,7 @@ Blockly.JavaScript['obj_get'] = function(block) {
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
+// Set object block definition
 Blockly.Blocks['obj_set'] = {
     init: function() {
         this.appendValueInput("KEY")
@@ -785,6 +844,7 @@ Blockly.Blocks['obj_set'] = {
     }
 };
 
+// Set object block translation
 Blockly.JavaScript['obj_set'] = function(block) {
     var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
     var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
@@ -795,6 +855,7 @@ Blockly.JavaScript['obj_set'] = function(block) {
     return code;
 };
 
+// Set object block definition (new, but old is kept if someone is using it)
 Blockly.Blocks['obj_set_new'] = {
     init: function() {
         this.appendValueInput("KEY")
@@ -815,6 +876,7 @@ Blockly.Blocks['obj_set_new'] = {
     }
 };
 
+// Set object block translation (new, but old is kept if someone is using it)
 Blockly.JavaScript['obj_set_new'] = function(block) {
     var value_key = Blockly.JavaScript.valueToCode(block, 'KEY', Blockly.JavaScript.ORDER_ATOMIC);
     var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
@@ -856,6 +918,7 @@ Blockly.JavaScript['obj_text_from'] = function(block) {
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
+// Axios call with objects block definition
 Blockly.Blocks['axios_call'] = {
     init: function() {
         this.appendDummyInput()
@@ -877,6 +940,7 @@ Blockly.Blocks['axios_call'] = {
     }
 };
 
+// Axios call with objects block translation
 Blockly.JavaScript['axios_call'] = function(block) {
     var value_params = Blockly.JavaScript.valueToCode(block, 'PARAMS', Blockly.JavaScript.ORDER_ATOMIC);
     var statements_scs_actions = Blockly.JavaScript.statementToCode(block, 'SCS_ACTIONS');
@@ -895,6 +959,7 @@ Blockly.JavaScript['axios_call'] = function(block) {
     return code;
 };
 
+// Axios call with inputs block definition
 Blockly.Blocks['axios_call_simple'] = {
     init: function() {
         this.appendDummyInput()
@@ -919,6 +984,7 @@ Blockly.Blocks['axios_call_simple'] = {
     }
 };
 
+// Axios call with inputs block translation
 Blockly.JavaScript['axios_call_simple'] = function(block) {
     var value_method = Blockly.JavaScript.valueToCode(block, 'METHOD', Blockly.JavaScript.ORDER_ATOMIC);
     var value_url = Blockly.JavaScript.valueToCode(block, 'url', Blockly.JavaScript.ORDER_ATOMIC);
@@ -941,6 +1007,7 @@ Blockly.JavaScript['axios_call_simple'] = function(block) {
     return code;
 };
 
+// Axios result block definition
 Blockly.Blocks['axios_result'] = {
     init: function() {
         this.appendDummyInput()
@@ -953,6 +1020,7 @@ Blockly.Blocks['axios_result'] = {
     }
 };
 
+// Axios result block translation
 Blockly.JavaScript['axios_result'] = function(block) {
     var comment = '';
     if (isValidAxiosRes(block)) {
@@ -964,5 +1032,3 @@ Blockly.JavaScript['axios_result'] = function(block) {
     var code = 'axios_res' + comment;
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
-
-// TODO: do presentation

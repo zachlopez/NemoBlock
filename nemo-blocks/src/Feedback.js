@@ -1,3 +1,10 @@
+/********************************************************************************************/
+/* Feedback.js                                                                              */
+/*__________________________________________________________________________________________*/
+/* Component that displays the google form for getting feedback.                            */
+/* Uses the setPage and curUser global state variables which must be passed in as props.    */
+/********************************************************************************************/
+
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 

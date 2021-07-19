@@ -1,3 +1,10 @@
+/********************************************************************************************/
+/* Documentation.js                                                                         */
+/*__________________________________________________________________________________________*/
+/* Component that displays the documentation for NemoBlocks                                 */
+/* Uses the setPage and curUser global state variables which must be passed in as props.    */
+/********************************************************************************************/
+
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import start from "./docImages/start.png"

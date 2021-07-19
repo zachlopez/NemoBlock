@@ -1,4 +1,10 @@
-//Workspace.js
+/********************************************************************************************/
+/* Workspace.js                                                                             */
+/*__________________________________________________________________________________________*/
+/* Component with the NemoBot workspace, handling display of translated code.               */
+/* Uses the setPage and setCurUser global state functions.                                  */
+/* Also uses the curUser and newId global state variables. These must be passed as props.   */
+/********************************************************************************************/
 
 import React, { useEffect, useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
@@ -25,42 +31,38 @@ export default function Workspace(props) {
     const [lastSaved, setLastSaved] = useState(JSON.stringify({user: props.curUser, id: "-1", filename: "", title: "", intro: "", program: tmpXml}));
     const [initialXml, setInitialXml] = useState("");
     
+    // Translates the code of a function block
     function generateDefProcedureCode(block) {
-        // Define a procedure with a return value.
         var funcName = block.getFieldValue('NAME');
         var xfix1 = '';
-        if (Blockly.JavaScript.STATEMENT_PREFIX) {
-        xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_PREFIX,
-            block);
-        }
-        if (Blockly.JavaScript.STATEMENT_SUFFIX) {
-        xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_SUFFIX,
-            block);
-        }
-        if (xfix1) {
-        xfix1 = Blockly.JavaScript.prefixLines(xfix1, Blockly.JavaScript.INDENT);
-        }
+        if (Blockly.JavaScript.STATEMENT_PREFIX)
+            xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_PREFIX, block);
+        if (Blockly.JavaScript.STATEMENT_SUFFIX)
+            xfix1 += Blockly.JavaScript.injectId(Blockly.JavaScript.STATEMENT_SUFFIX, block);
+        if (xfix1)
+            xfix1 = Blockly.JavaScript.prefixLines(xfix1, Blockly.JavaScript.INDENT);
         var loopTrap = '';
         if (Blockly.JavaScript.INFINITE_LOOP_TRAP) {
-        loopTrap = Blockly.JavaScript.prefixLines(
-            Blockly.JavaScript.injectId(Blockly.JavaScript.INFINITE_LOOP_TRAP,
-            block), Blockly.JavaScript.INDENT);
+            loopTrap = Blockly.JavaScript.prefixLines(
+                Blockly.JavaScript.injectId(Blockly.JavaScript.INFINITE_LOOP_TRAP,
+                block), Blockly.JavaScript.INDENT
+            );
         }
         var branch = Blockly.JavaScript.statementToCode(block, 'STACK');
         var returnValue = Blockly.JavaScript.valueToCode(block, 'RETURN',
             Blockly.JavaScript.ORDER_NONE) || '';
         var xfix2 = '';
         if (branch && returnValue) {
-        // After executing the function body, revisit this block for the return.
-        xfix2 = xfix1;
+            // After executing the function body, revisit this block for the return.
+            xfix2 = xfix1;
         }
         if (returnValue) {
-        returnValue = Blockly.JavaScript.INDENT + 'return ' + returnValue + ';\n';
+            returnValue = Blockly.JavaScript.INDENT + 'return ' + returnValue + ';\n';
         }
         var args = [];
         var variables = block.getVars();
         for (var i = 0; i < variables.length; i++) {
-        args[i] = Blockly.JavaScript.nameDB_.getName(variables[i],
+            args[i] = Blockly.JavaScript.nameDB_.getName(variables[i],
             Blockly.VARIABLE_CATEGORY_NAME);
         }
         var code = 'function ' + funcName + '(' + args.join(', ') + ') {\n' +
@@ -68,10 +70,12 @@ export default function Workspace(props) {
         return Blockly.JavaScript.scrub_(block, code);
     }
     
+    // Checks if the workspace was edited
     function wasEdited() {
         return JSON.stringify({user: props.curUser, id: curId, filename: filename, title: title, intro: intro, program: xml}) !== lastSaved;
     }
     
+    // When the workspace changed, run this function
     function workspaceDidChange(workspace) {
         var varList = Blockly.Variables.allUsedVarModels(workspace);
         let code = Blockly.JavaScript.workspaceToCode(workspace);
@@ -81,13 +85,16 @@ export default function Workspace(props) {
         let reqAxios = "";
         let debugCode = "";
 
+        // If the program has variables, remove them and put them at the start
         if (codeLines[0].indexOf("var") === 0) {
             codeStart = codeLines[0] + "\n" + codeLines[1] + "\n";
             codeInit = 2;
         }
 
+        // If the program uses axios, require the axios library
         if (code.includes("axios")) reqAxios = "const axios = require('axios');\n";
 
+        // If debug mode is activated, adds debug functions
         if (addDebug) {
             debugCode = "" +
             "// wraps the start function in a try-catch statement for debug mode\n" + 
@@ -113,9 +120,9 @@ export default function Workspace(props) {
         }
 
         code = "'use strict';\n" + 
-        reqAxios + 
+        reqAxios + // Axios library if needed
         "var say, sendButton;\n" + 
-        codeStart + 
+        codeStart + // Variables used removed from the beginning of the translation
         "\n\n// puts all used variables in a dictionary object\n" + 
         "const summarizeVariables = () => { \n" +
             "  return JSON.stringify({ \n" +
@@ -144,13 +151,18 @@ export default function Workspace(props) {
         "  start: " + ((addDebug) ? "debug_start" : "start") + ",\n" + 
         "  state: " + ((addDebug) ? "debug_repeat" : "repeat") + ",\n" + 
         "};\n"
+
+        // Set the translated javascript code
         setJavascriptCode(code);
+
+        // Get the translation of the selected block
         try {
             var messyCurCode = "";
             var curBlock = Blockly.selected;
             var messyNxtCode = "";
             var nxtBlock = curBlock.getNextBlock();
-
+            
+            // Get translation of selected block and onwards using Blockly
             if (curBlock === null) {
                 messyCurCode = "";
             } else if (curBlock.type.includes('procedures')) {
@@ -172,7 +184,8 @@ export default function Workspace(props) {
                     messyCurCode = "";
                 }
             }
-
+            
+            // Get translation of blocks after selected block using Blockly
             if (nxtBlock === null) {
                 messyNxtCode = "";
             } else if (nxtBlock.type.includes('procedures')) {
@@ -195,6 +208,7 @@ export default function Workspace(props) {
                 }
             }
             
+            // Replace variable ids with proper variable names
             varList.forEach((varModel) => {
                 // Serialize variable id
                 var curId = varModel.getId().replaceAll('`', '_60');
@@ -210,6 +224,7 @@ export default function Workspace(props) {
                 messyNxtCode = messyNxtCode.replaceAll(curId, Blockly.JavaScript.variableDB_.getName(varModel.name, Blockly.Variables.NAME_TYPE));
             });
 
+            // Get only the translated code of selected block
             var lastIndex = messyCurCode.lastIndexOf(messyNxtCode);
             setSelectedCode(messyCurCode.substring(0,lastIndex));
         }
@@ -218,6 +233,7 @@ export default function Workspace(props) {
         }
     }
 
+    // Handles copying to the clipboard when in chrome and not in secure connection
     function copyToClipboard(textToCopy) {
         // navigator clipboard api needs a secure context (https)
         if (navigator.clipboard && window.isSecureContext) {
@@ -242,6 +258,7 @@ export default function Workspace(props) {
         }
     }
 
+    // Copy button handler
     let handleCopy = async e => {
         e.preventDefault();
         copyToClipboard(javascriptCode)
@@ -256,6 +273,7 @@ export default function Workspace(props) {
         
     };
 
+    // Logout button handler
     let handleLogout = async e => {
         e.preventDefault();
         if (wasEdited()) {
@@ -267,6 +285,7 @@ export default function Workspace(props) {
         }
     };
 
+    // Back button handler
     let handleBack = async e => {
         e.preventDefault();
         if (wasEdited()) {
@@ -277,6 +296,7 @@ export default function Workspace(props) {
         }
     };
 
+    // Yes (on Back and changes made) button handler
     let handleYes = async e => {
         e.preventDefault();
         if (stalledProcess === "Logout") {
@@ -287,16 +307,19 @@ export default function Workspace(props) {
         }
     };
 
+    // No (on Back and changes made) button handler
     let handleNo = async e => {
         e.preventDefault();
         setShowConfirm(false);
     };
 
+    // More button handler
     let handleMore = async e => {
         e.preventDefault();
         setShowMore(!showMore);
     };
 
+    // Save button handler
     let handleSave = async e => {
         e.preventDefault();
         if (title.trim() === "" || filename.trim() === "") {
@@ -330,6 +353,7 @@ export default function Workspace(props) {
         }
     };
 
+    // Save as button handler
     let handleSaveAs = async e => {
         e.preventDefault();
         if (title.trim() === "" || filename.trim() === "") {
@@ -363,16 +387,19 @@ export default function Workspace(props) {
         }
     }
 
+    // (De/Ac)tivate debug button handler
     let handleDebug = async e => {
         e.preventDefault();
         setAddDebug(!addDebug);
     }
 
+    // Delete button handler
     let handleDelete = async e => {
         e.preventDefault();
         setShowDelete(true);
     };
 
+    // Continue (on Delete) button handler
     let handleContinue = async e => {
         e.preventDefault();
         const response = await fetch('/delete', {
@@ -389,11 +416,13 @@ export default function Workspace(props) {
         if (body.stat !== "Success") props.setPage("Programs");
     };
 
+    // Cancel (on Delete) button handler
     let handleCancel = async e => {
         e.preventDefault();
         setShowDelete(false);
     };
 
+    // Loads program on selection
     useEffect(() => {
         async function handleLoad () {
             const response = await fetch('/load', {

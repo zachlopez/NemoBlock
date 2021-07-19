@@ -1,3 +1,10 @@
+/********************************************************************************************/
+/* App.js                                                                                   */
+/*__________________________________________________________________________________________*/
+/* Main Component. Contains Page components that handle which component is being displayed. */
+/* Contains global state variables which are shared between components in differant pages.  */
+/********************************************************************************************/
+
 import "./App.css";
 import "./customBlocks/custom_Blocks";
 import React, { useState } from "react";

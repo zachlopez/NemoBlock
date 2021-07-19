@@ -1,3 +1,10 @@
+/********************************************************************************************/
+/* Login.js                                                                                 */
+/*__________________________________________________________________________________________*/
+/* Component used for logging in users.                                                     */
+/* Uses the setPage and setCurUser global state variables which must be passed in as props. */
+/********************************************************************************************/
+
 import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 
