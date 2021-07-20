@@ -128,7 +128,7 @@ export default function Workspace(props) {
             "  return JSON.stringify({ \n" +
                 varList.reduce((sum, cur)  => {
                     var varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
-                    return sum + "    " + varName + ": (" + varName + ") ? " + varName + " : '',\n";
+                    return sum + "    " + varName + ": (" + varName + " !== null) ? " + varName + " : '',\n";
                 }, "") + 
             "  }); \n" + 
         "}; \n\n\n" +   
@@ -139,7 +139,7 @@ export default function Workspace(props) {
                 let varName = Blockly.JavaScript.variableDB_.getName(cur.name, Blockly.Variables.NAME_TYPE);
                 let illegalNames = ["state", "start", "curPayload", "options", "summarizeVariables", "updateVariables", "sendButton", "say", "sayIn", "sendButtonIn", "payload", "axios_res", "axios", "modules"];
                 if (illegalNames.includes(varName)) newSum = newSum + "  // ERROR: the name '" + varName + "' is already used\n";
-                return newSum + "  " + varName + " = (payload." + varName + ") ? payload." + varName + " : ''; \n";
+                return newSum + "  " + varName + " = (payload." + varName + " !== null) ? payload." + varName + " : ''; \n";
             }, "") + 
         "}; \n\n\n" +
         codeLines.slice(codeInit).join("\n") + "\n" +  

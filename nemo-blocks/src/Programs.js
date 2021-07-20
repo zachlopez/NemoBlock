@@ -135,6 +135,9 @@ export default function Programs(props) {
                         New Program
                         <button class="btn btn-outline-primary float-end" id="val-1" onClick={handleClick}>Create</button>
                     </li>
+                    {(Object.keys(prgNames).length === 0) ? <li class="list-group-item" key="ProgramsLoading">
+                            Programs loading...
+                        </li> : <></>}
                     {Object.entries(prgNames).map((pair) => 
                         <li class="list-group-item" key={"key"+pair[0]}>
                             {pair[1]}

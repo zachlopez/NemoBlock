@@ -441,7 +441,7 @@ Blockly.JavaScript['ask'] = function(block) {
         return "// ERROR: this 'ask' block needs to be outside an 'ask' or 'option' block - " + value_dialogue + "\n";
     } else {
         block.setColour("#a5805b");
-        return "const curPayload = JSON.parse(summarizeVariables());\n" +
+        return "let curPayload = JSON.parse(summarizeVariables());\n" +
         "let options = [];\n" + 
         statements_actions.replaceAll("\n  ", "\n").substring(2) +
         "sendButton(" + value_dialogue + ", options);\n";
@@ -486,9 +486,10 @@ Blockly.JavaScript['option'] = function(block) {
     } else {
         block.setColour("#a5805b");
         return "// " + value_title + " option\n" +  
-        "updateVariables(curPayload); // restores variables \n" + 
+        "curPayload = JSON.parse(summarizeVariables()); \n" +
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n" + 
+        "updateVariables(curPayload); // restores variables \n";
     }
 };
 
@@ -524,7 +525,6 @@ Blockly.JavaScript['option_only'] = function(block) {
     } else {
         block.setColour("#a5805b");
         return "// " + value_title + " option\n" + 
-        "updateVariables(curPayload); // restores variables \n" + 
         "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
     }
 };
@@ -573,10 +573,11 @@ Blockly.JavaScript['option_do'] = function(block) {
     } else {
         block.setColour("#a5805b");
         return "// " + value_title + " option\n" + 
-        "updateVariables(curPayload); // restores variables \n" + 
+        "curPayload = JSON.parse(summarizeVariables()); \n" +
         statements_actions + 
         variable_payload_var + ' = ' + value_payload_val + ';\n' + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n" + 
+        "updateVariables(curPayload); // restores variables \n";
     }
 };
 
@@ -616,9 +617,10 @@ Blockly.JavaScript['option_do_only'] = function(block) {
     } else {
         block.setColour("#a5805b");
         return "// " + value_title + " option\n" + 
-        "updateVariables(curPayload); // restores variables \n" + 
+        "curPayload = JSON.parse(summarizeVariables()); \n" + 
         statements_actions + 
-        "options.push({title: " + value_title +", payload: summarizeVariables()});\n";
+        "options.push({title: " + value_title +", payload: summarizeVariables()});\n" +
+        "updateVariables(curPayload); // restores variables \n";
     }
 };
 
@@ -655,7 +657,6 @@ Blockly.JavaScript['option_restart'] = function(block) {
     } else {
         block.setColour("#a5805b");
         return "// " + value_title + " option\n" + 
-        "updateVariables(curPayload); // restores variables \n" + 
         "options.push({title: " + value_title +", payload: 'restart'});\n";
     }
 };
@@ -1032,3 +1033,5 @@ Blockly.JavaScript['axios_result'] = function(block) {
     var code = 'axios_res' + comment;
     return [code, Blockly.JavaScript.ORDER_NONE];
 };
+
+// Add loading lists
