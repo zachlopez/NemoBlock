@@ -217,6 +217,23 @@ app.post('/getPrgNames', (req, res) => {
   });
 });
 
+app.post('/download', (req, res) => {
+  let retrieveSQL = 'SELECT * FROM programs WHERE username = ? AND id = ?';
+  // first row only
+  db.get(retrieveSQL, [req.body.user, req.body.id], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.send(JSON.stringify({stat: 'An error occured. Please try again.'}));
+    } else if (row) { // if the row exists
+      res.status(200)
+        .attachment(row.filename + `.txt`)
+        .send(row.program);
+    } else {
+      res.send(JSON.stringify({stat: "Selected program id is not found in the user's saved programs."}));
+    }
+  });
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
 process.on('exit', code => {

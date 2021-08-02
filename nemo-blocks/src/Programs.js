@@ -8,6 +8,7 @@
 /********************************************************************************************/
 
 import React, { useEffect, useState } from "react";
+import FileDownload from "js-file-download";
 import 'bootstrap/dist/css/bootstrap.css';
 
 export default function Programs(props) {
@@ -104,14 +105,38 @@ export default function Programs(props) {
         }
     };
 
+    let handleDownloadClick = async e => {
+        let downloadId = e.target.id.substring(3);
+        const response = await fetch('/load', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({user: props.curUser, id: downloadId}),
+        });
+        let body = await response.text();
+        body = JSON.parse(body);
+        if (body.stat.includes("success") || body.stat.includes("Success")) {
+            const response = await fetch('/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({user: props.curUser, id: downloadId}),
+            });
+            let blob = await response.blob();
+            FileDownload(blob, body.val.filename + '.xml');
+        }
+    }
+
     let handleDocumentationClick = async e => {
         e.preventDefault();
-        props.setPage("Documentation")
+        props.setPage("Documentation");
     };
 
     let handleFeedbackClick = async e => {
         e.preventDefault();
-        props.setPage("Feedback")
+        props.setPage("Feedback");
     };
 
     return (
@@ -143,8 +168,9 @@ export default function Programs(props) {
                             {pair[1]}
                             <div class="btn-toolbar float-end">
                             <input value={pair[1]} style={{display: "none"}} id={"val"+pair[0]} readOnly></input>
-                            <button class="btn btn-outline-primary mx-3" id={"edi"+pair[0]} onClick={handleClick}>Edit</button>
-                            <button class="btn btn-outline-primary" id={"del"+pair[0]} onClick={handleDelete}>Delete</button>
+                            <button class="btn btn-outline-primary" id={"edi"+pair[0]} onClick={handleClick}>Edit</button>
+                            <button class="btn btn-outline-primary mx-3" id={"xpt"+pair[0]} onClick={handleDownloadClick}>Export</button>
+                            <button class="btn btn-outline-danger" id={"del"+pair[0]} onClick={handleDelete}>Delete</button>
                             </div>
                         </li>
                     )}
