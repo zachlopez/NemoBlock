@@ -7,7 +7,7 @@
 
 import "./App.css";
 import "./customBlocks/custom_Blocks";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Page from "./Page";
 import Login from "./Login";
 import Programs from "./Programs";
@@ -20,6 +20,10 @@ export default function App() {
   const [curUser, setCurUser] = useState("");
   const [newId, setNewId] = useState(-1);
   const [page, setPage] = useState("Login");
+
+  useEffect(() => {
+    document.title = "NemoBlocks | " + page;
+  }, [page])
 
   return (
     <div style={{display: "flex", flexWrap: "wrap", width: "100%", minHeight: "100%"}}>
