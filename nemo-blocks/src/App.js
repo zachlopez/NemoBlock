@@ -14,6 +14,7 @@ import Programs from "./Programs";
 import Workspace from "./Workspace";
 import Documentation from "./Documentation";
 import Feedback from "./Feedback";
+import Import from "./Import";
 
 export default function App() {
   const [curUser, setCurUser] = useState("");
@@ -40,6 +41,10 @@ export default function App() {
 
       <Page target="Feedback" current={page}>
         <Feedback shown={"Feedback"===page} curUser={curUser} setPage={setPage}></Feedback>
+      </Page>
+
+      <Page target="Import" current={page}>
+        <Import shown={"Import"===page} curUser={curUser} setPage={setPage}></Import>
       </Page>
     </div>
   );

@@ -44,6 +44,11 @@ export default function Programs(props) {
         props.setPage("Workspace");
     };
 
+    let handleImportClick = e => {
+        e.preventDefault();
+        props.setPage("Import");
+    };
+
     let handleDelete = async e => {
         e.preventDefault();
         setShowConfirm(true);
@@ -159,6 +164,7 @@ export default function Programs(props) {
                     <li class="list-group-item" key="key-1">
                         New Program
                         <button class="btn btn-outline-primary float-end" id="val-1" onClick={handleClick}>Create</button>
+                        <button class="btn btn-outline-primary float-end mx-3" id="val-2" onClick={handleImportClick}>Import</button>
                     </li>
                     {(Object.keys(prgNames).length === 0) ? <li class="list-group-item" key="ProgramsLoading">
                             Programs loading...
